@@ -1,0 +1,328 @@
+- name: dconf - loginscreen - hide userlist
+  block:
+    - name: dconf - modify greeter settings
+      lineinfile:
+        path: /usr/share/gdm/greeter.dconf-defaults
+        regexp: '(^|^# ){{ item.key }}\='
+        line: "{{ item.key }}={{ item.value }}"
+        state: present
+      with_items:
+        - key: "disable-user-list"
+          value: "true"
+    - name: dconf - apply modified greeter config
+      shell: "dpkg-reconfigure gdm3"
+  when: remove_login_userlist
+  tags:
+    - system_hide_userlist
+    - system
+
+- name: gdm - disable xdmcp
+  lineinfile:
+    path: /etc/gdm3/custom.conf
+    regexp: '(^|^#  )Enable\='
+    line: "Enable=false"
+    insertafter: '\[xdmcp\]'
+    state: present
+  tags:
+    - gdm_disable_xdmp
+    - system
+
+- name: prevent automount - remove autofs
+  apt:
+    pkg:
+      - autofs
+    state: absent
+    purge: yes
+    update_cache: no
+  tags:
+    - system
+
+- name: usbauth - limit usage of usb devices
+  block:
+    - name: usbauth - install
+      apt:
+        pkg:
+          - usbauth
+        state: present
+        update_cache: yes
+
+    - name: usbauth - deploy config
+      copy:
+        src: usbauth.conf
+        dest: /etc/
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: usbauth - init
+      shell: usbauth init
+  tags:
+    - system
+
+- name: apparmor
+  block:
+    - name: apparmor - install
+      apt:
+        pkg:
+          - apparmor-utils
+          - apparmor-profiles
+          - apparmor-profiles-extra
+        state: present
+        update_cache: yes
+
+    - name: apparmor - check for existing firefox-esr
+      stat:
+        path: /etc/apparmor.d/abstractions/ubuntu-browsers.d/firefox-esr
+      register: firefox_esr
+
+    - name: apparmor - create symlinks for firefox-esr - abstractions
+      file:
+        src: /etc/apparmor.d/abstractions/ubuntu-browsers.d/firefox-esr
+        dest: /etc/apparmor.d/abstractions/ubuntu-browsers.d/firefox
+        state: link
+      when: firefox_esr.stat.exists
+
+    - name: apparmor - create symlinks for firefox-esr - binary
+      file:
+        src: /etc/apparmor.d/local/usr.bin.firefox-esr
+        dest: /etc/apparmor.d/local/usr.bin.firefox
+        state: link
+      when: firefox_esr.stat.exists
+
+    - name: apparmor - activate profiles
+      shell: aa-enforce /etc/apparmor.d/*
+  tags:
+    - apparmor
+    - system
+
+- name: apparmor - bootloader
+  block:
+    - name: boot-option - check if security=apparmor is already disabled
+      shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "apparmor=1"
+      register: boot_apparmor_enabled
+      ignore_errors: true
+
+    - name: boot-option - enable apparmor
+      lineinfile:
+        path: "/etc/default/grub"
+        regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="(.*)"'
+        line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 apparmor=1"'
+        backrefs: yes
+      when: boot_apparmor_enabled.stdout == "0"
+      
+    - name: boot-option - check if security=apparmor is already disabled
+      shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "security=apparmor"
+      register: boot_security_apparmor
+      ignore_errors: true
+
+    - name: boot-option - set security=apparmor
+      lineinfile:
+        path: "/etc/default/grub"
+        regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="(.*)"'
+        line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 security=apparmor"'
+        backrefs: yes
+      when: boot_security_apparmor.stdout == "0"
+
+    - name: update-grub
+      shell: update-grub
+      when: boot_security_apparmor.stdout == "0" or boot_apparmor_enabled.stdout == "0"
+      #notify: reboot system
+  tags:
+    - apparmor
+    - apparmor_boot
+    - system
+
+- name: more restrictive file permissions ...
+  block:
+    - name: more restrictive file permissions (1/7)
+      include_tasks: sub_permissions.yml
+      vars:
+        file_path: "{{ item }}"
+        file_owner: "root"
+        file_group: "root"
+        file_mode: "og-rwx"
+      with_items:
+        - /boot/grub/grub.cfg
+        - /etc/crontab
+        - /etc/cron.hourly
+        - /etc/cron.daily
+        - /etc/cron.weekly
+        - /etc/cron.monthly
+        - /etc/cron.d
+        - /etc/ssh/sshd_config
+
+    - name: more restrictive file permissions (2/7)
+      file:
+        path: "/etc/group"
+        owner: root
+        group: root
+        mode: 644
+
+    - name: more restrictive file permissions (3/7)
+      include_tasks: sub_permissions.yml
+      vars:
+        file_path: "{{ item }}"
+        file_owner: "root"
+        file_group: "root"
+        file_mode: "u-x,go-wx"
+      with_items:
+        - /etc/motd
+        - /etc/issue
+        - /etc/issue.net
+        - /etc/passwd
+        - /etc/passwd-
+        - /etc/group-
+
+    - name: more restrictive file permissions (4/7)
+      include_tasks: sub_permissions.yml
+      vars:
+        file_path: "{{ item }}"
+        file_owner: "root"
+        file_group: "shadow"
+        file_mode: "o-rwx,g-wx"
+      with_items:
+        - /etc/shadow
+        - /etc/gshadow
+
+    - name: more restrictive file permissions (5/7)
+      include_tasks: sub_permissions.yml
+      vars:
+        file_path: "{{ item }}"
+        file_owner: "root"
+        file_group: "shadow"
+        file_mode: "u-x,go-rwx"
+      with_items:
+        - /etc/shadow~
+        - /etc/gshadow~
+
+    - name: determine host key files
+      find:
+        paths: /etc/ssh
+        patterns: "ssh_host_*_key"
+        use_regex: yes
+        file_type: file
+      register: host_keys
+
+    - name: more restrictive file permissions (6/7)
+      file:
+        path: "{{ item.path }}"
+        owner: root
+        group: root
+        mode: 0600
+      with_items: "{{ host_keys.files }}"
+
+    - name: determine host public key files
+      find:
+        paths: /etc/ssh
+        patterns: "ssh_host_*_key.pub"
+        use_regex: yes
+        file_type: file
+      register: host_pub_keys
+
+    - name: more restrictive file permissions (7/7)
+      file:
+        path: "{{ item.path }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items: "{{ host_pub_keys.files }}"
+  tags:
+    - system
+
+- name: cron & at
+  block:
+    - name: cron & at - prevent blacklisting
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/cron.deny
+        - /etc/at.deny
+
+    - name: cron & at - enable whitelisting
+      file:
+        path: "{{ item }}"
+        state: touch
+        owner: root
+        group: root
+        mode: 0640
+      with_items:
+        - /etc/cron.allow
+        - /etc/at.allow
+  tags:
+    - system
+
+- name: syslogs
+  block:
+    - name: jounald - configure
+      lineinfile:
+        path: /etc/systemd/journald.conf
+        regexp: "(^|^#){{ item.key }}"
+        line: "{{ item.key }}={{ item.value }}"
+        state: present
+      with_items:
+        - key: "Storage"
+          value: "persistent"
+        - key: "ForwardToSyslog"
+          value: "yes"
+        - key: "Compress"
+          value: "yes"
+
+    - name: journald - remove logs
+      file:
+        path: /var/log/journal
+        state: absent
+
+    - name: journald - restart daemon
+      shell: "systemctl restart *journald.service"
+
+    - name: syslog - check/set config
+      lineinfile:
+        path: /etc/rsyslog.conf
+        regexp: "^{{ item.key }}"
+        line: "{{ item.key }} {{ item.value }}"
+        state: present
+      with_items:
+        - key: "$FileOwner"
+          value: "syslog"
+        - key: "$FileGroup"
+          value: "adm"
+        - key: "$FileCreateMode"
+          value: "0640"
+        - key: "$DirCreateMode"
+          value: "0755"
+  tags:
+    - syslogs
+    - system
+
+- name: empty issue files
+  lineinfile:
+    path: "{{ item }}"
+    regexp: ".*"
+    state: absent
+  with_items:
+    - /etc/issue
+    - /etc/issue.net
+  tags:
+    - system
+
+- name: create compiling summaries of reachable binaries
+  block:
+    - name: compiler-options summary of executables and libraries reachable by $PATH
+      script: assets/summary-compiling-check.sh
+      register: summary_compiling_check
+
+    - name: print summary of compiler-options check
+      pause:
+        prompt: "{{ summary_compiling_check.stdout_lines }}"
+        seconds: 2
+  when: compiling_summaries
+  tags:
+    - system
+    - summary-compiling-check
+
+- name: run queued handlers
+  meta: flush_handlers
+  tags:
+    - system

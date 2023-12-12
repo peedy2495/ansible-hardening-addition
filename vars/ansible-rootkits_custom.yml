@@ -1,0 +1,7 @@
+antirootkits_mail_from: "root@localhost"
+antirootkits_mail_to: "root@localhost"
+
+rkhunter: true
+chkrootkit: true
+unhide: true
+shelldetector: false

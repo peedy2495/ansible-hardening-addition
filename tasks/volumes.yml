@@ -1,0 +1,14 @@
+- name: gsetting - prevent automounts of external drives
+  blockinfile:
+    path: /etc/profile.d/no_automounts.sh
+    create: true
+    mode: '0644'
+    block: |
+      #!/bin/bash
+      # prevent automounting external drives
+      # required packages: gsettings-desktop-schemas
+    
+      gsettings set org.gnome.desktop.media-handling automount false
+  tags:
+   - volumes
+   - no_automounts

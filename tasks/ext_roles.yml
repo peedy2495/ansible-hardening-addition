@@ -1,0 +1,78 @@
+# !deprecated! prerequisites: run 'ansible-galaxy install -r requirements.yml'
+# get ext roles:
+#   https://github.com/mablanco/ansible-antirootkits.git
+#   https://github.com/geerlingguy/ansible-role-clamav.git
+
+
+- name: ansible-rootkits - start
+  block:
+  - name: ansible-rootkits - load custom vars
+    include_vars: ansible-rootkits_custom.yml
+
+  - name: ansible-antirootkits - play role
+    import_role:
+      name: ansible-antirootkits
+  tags:
+    - ext_roles
+    - antirootkits
+
+- name: rkhunter - whitelisted processes
+  lineinfile:
+    path: "/etc/rkhunter.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "(^|^#)ALLOWIPCPROC="
+      line: "ALLOWIPCPROC=/usr/bin/gnome-shell"
+  tags:
+    - ext_roles
+    - antirootkits
+
+- name: clamav - play ansible-role-clamav role
+  import_role:
+    name: ansible-role-clamav
+  tags:
+    - ext_roles
+    - clamav
+
+- name: clamav - configure freshclam for local signatue caching 1/2
+  replace:
+    path: /etc/clamav/freshclam.conf
+    regexp: "(^{{ item }}.*)"
+    replace: '#\1'
+  with_items:
+    - "DatabaseDirectory"
+  when: clamav_offlinedb
+  tags:
+    - ext_roles
+
+- name: clamav - configure freshclam for local signatue caching 2/2
+  lineinfile:
+    path: /etc/clamav/freshclam.conf
+    regexp: "(^{{ item.var }})(.*)$"
+    line: "{{ item.var }} {{ item.value }}"
+    state: present
+  with_items:
+    - var: "PrivateMirror"
+      value: "{{ clamav_localcache }}"
+    - var: "ScriptedUpdates"
+      value: "no"
+  when: clamav_offlinedb
+  tags:
+    - ext_roles
+
+- name: clamav - update signatures
+  service:
+    name: clamav-freshclam
+    state: restarted
+  tags:
+    - ext_roles
+    - clamav
+
+- name: run queued handlers
+  meta: flush_handlers
+  tags:
+    - ext_roles
+    - antirootkits
+    - clamav

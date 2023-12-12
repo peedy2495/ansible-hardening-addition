@@ -1,0 +1,54 @@
+skip_reboots: true
+
+## nexus cashed package proxy
+use_nexus: yes
+nexus_proxy: "ubuntu-proxy"
+nexus_proxy_port: "8081"
+nexus_proxy_proto: "http"
+
+# update system
+upgrade_packages: yes
+
+# modify firewall with restrictive rules
+set_firewall: yes
+
+# clamav configuration
+clamav_offlinedb: no
+# following values will only set on clamav_offlinedb(yes)
+clamav_localcache: "{{nexus_proxy_proto}}://{{nexus_proxy}}:{{nexus_proxy_port}}/repository/clamav-db/"
+clamav_dbmirror: "database.clamav.net"
+clamav_cldcompress: "yes"
+
+# print statistics of vulnerabilies in executable binaries - time expensive!
+compiling_summaries: no
+
+# Failed login attempts to lock the system
+pwd_syslock: "5"
+
+# System locking time after failed attepts (secs)
+pwd_syslock_time: "900"
+
+# Password history length
+pwd_history: "24"
+pwd_age_max: "180"
+pwd_age_min: "1"
+pwd_age_warn: "30"
+
+# Logins
+set_root_password: yes
+remove_login_userlist: yes
+lock_user_inactive: 30
+logins_use_faillock: false
+
+# lock account after n days
+login_expires: "30"
+
+# NTP configuration
+set_ntp: yes
+ntp_source: pool.ntp.org
+
+# remove kernel extra modules
+rm_extra_modules: no
+
+# !Attention! blacklisting all recent unused kernel modules ... might crash remote systems
+blacklist_unused: no

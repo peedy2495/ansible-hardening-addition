@@ -1,0 +1,134 @@
+- name: installing package dependencies
+  apt:
+    update_cache: yes
+    pkg:
+      - apt-listchanges
+      - binutils
+      - clamtk
+      - elfutils
+      - fail2ban
+      - git
+      - iucode-tool
+      - libopenscap8
+      - libpam-pwquality
+      - libpam-tmpdir
+      - needrestart
+      - unzip
+      - whois
+      - auditd
+      - libpam-tmpdir
+      - apt-listchanges
+      - needrestart
+      - fail2ban
+      - aide
+      - libpam-runtime
+    state: present
+  tags:
+    - software
+
+- name: remove unused packages
+  apt:
+    pkg:
+      - apport
+      - apport-symptoms
+      - at
+      - cloud-guest-utils
+      - cloud-init
+      - cloud-initramfs-copymods
+      - cloud-initramfs-dyn-netconf
+      - curl
+      - dnsutils
+      - eject
+      - ftp
+      - iputils-tracepath
+      - ldap-utils
+      - modemmanager
+      - netcat-openbsd
+      - nis
+      - openbsd-inetd
+      - popularity-contest
+      - rsh-client
+      - talk
+      - telnet
+      - ubuntu-report
+      - whoopsie
+      - xinetd
+    state: absent
+    purge: yes
+    update_cache: no
+  tags:
+    - software
+
+- name: grab hardening-check from devscrips
+  block:
+    - name: create temporary devscripts dir
+      file:
+        path: /tmp/devscripts
+        state: directory
+
+    - name: download devscripts
+      shell: apt download devscripts
+
+    - name: umpack devscripts
+      shell: dpkg -x devscripts_*_amd64.deb /tmp/devscripts/
+
+    - name: copy hardening-check
+      copy:
+        remote_src: yes
+        src: /tmp/devscripts/usr/bin/hardening-check
+        dest: /usr/bin/hardening-check
+        mode: 755
+        owner: root
+        group: root
+
+    - name: remove temporary devscripts dir
+      file:
+        path: /tmp/devscripts
+        state: absent
+  tags:
+    - software
+
+- name: run queued handlers
+  meta: flush_handlers
+  tags:
+    - software
+
+- name: autoremove orphanned packages
+  apt:
+    autoremove: yes
+    purge: yes
+  notify:
+    - clear caches
+  tags:
+    - software
+    - upgrade
+
+- name: upgrade system
+  block:
+    - name: killing any running update process
+      shell: pkill apt-get; pkill dpkg; sleep 2
+    - name: upgrading
+      apt:
+        update_cache: yes
+        upgrade: yes
+      register: apt_upgrade
+      retries: 5
+      until: apt_upgrade is success
+      notify: reboot system
+  when: upgrade_packages
+  tags:
+    - software
+    - upgrade
+
+- name: installing cpu microcodes
+  apt:
+    update_cache: yes
+    pkg:
+      - intel-microcode
+      - iucode-tool
+      - amd64-microcode
+    state: "{{ item }}"
+    # be shure of pulling those packages in case of using a cached proxy
+  with_items: ["absent", "present"]
+  tags:
+    - software

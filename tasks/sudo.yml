@@ -1,0 +1,52 @@
+- name: sudo - force users to be a member of group root
+  replace:
+    path: /etc/pam.d/su
+    regexp: "(^# auth       required   pam_wheel.so)$"
+    replace: "auth       required   pam_wheel.so"
+  tags:
+    - sudo
+
+- name: sudo - allow using terminals, only
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: "secure_path"
+    line: "Defaults        requiretty"
+    state: present
+  tags:
+    - sudo
+
+- name: sudo - prevent backround forking
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: "secure_path"
+    line: "Defaults        use_pty"
+    state: present
+  tags:
+    - sudo
+
+- name: sudo - ask for root password
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: "secure_path"
+    line: "Defaults        rootpw"
+    state: present
+  tags:
+    - sudo
+
+- name: sudo - separate logging
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: "secure_path"
+    line: "Defaults        logfile=/var/log/sudo.log"
+    state: present
+  tags:
+    - sudo
+
+- name: sudo - set login timeout
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: "secure_path"
+    line: "Defaults        timestamp_timeout=15"
+    state: present
+  tags:
+    - sudo

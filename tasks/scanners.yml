@@ -1,0 +1,15 @@
+- name: AIDE - Build and Test Database
+  command: /usr/sbin/aideinit -y -f
+  tags:
+    - aide
+    - scanners
+
+- name: AIDE - Stage Database
+  copy:
+    src: /var/lib/aide/aide.db.new
+    dest: /var/lib/aide/aide.db
+    backup: true
+    remote_src: true
+  tags:
+    - aide
+    - scanners

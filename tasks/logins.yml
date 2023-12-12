@@ -1,0 +1,416 @@
+- name: password rules
+  copy:
+    src: pwquality.conf
+    dest: /etc/security/
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - pwdrules
+    - logins
+
+- name: wordlists
+  block:
+    - name: set var vor githubusercontent for internet
+      set_fact:
+        raw_githubusercontent_url: "https://raw.githubusercontent.com"
+      when: not use_nexus
+
+    - name: set var vor githubusercontent for internet
+      set_fact:
+        raw_githubusercontent_url: "{{ nexus_proxy_proto }}://{{ nexus_proxy }}:{{ nexus_proxy_port }}/repository/raw-githubusercontent"
+      when: use_nexus
+
+    - name: load wordlists
+      include_vars: wordlists.yml
+
+    - name: pull desired wordlists
+      get_url:
+        url: "{{ item.url }}"
+        timeout: 30
+        dest: "/usr/share/dict/{{ item.name }}"
+        mode: "0644"
+      register: pull_wordlists
+      with_items:
+        - "{{cracklib_wordlists}}"
+
+    - name: Update cracklib database
+      shell: create-cracklib-dict /usr/share/dict/*
+      when: pull_wordlists.changed
+      notify: clear caches
+  tags:
+    - wordlists
+    - logins
+
+- name: Systemlock after failed logins - Ubuntu 20.04
+  block:
+    - name: lock system after n retries
+      blockinfile:
+        dest: /etc/pam.d/common-auth
+        state: present
+        insertafter: "details"
+        marker: "## {mark} - lock system after n replies"
+        block: |
+          auth    required                        pam_tally2.so onerr=fail audit silent deny={{ pwd_syslock }} unlock_time={{ pwd_syslock_time }}
+    - name: consider login counter for sudo
+      blockinfile:
+        dest: /etc/pam.d/sudo
+        state: present
+        insertafter: "PAM"
+        marker: "## {mark} - consider login counter for sudo"
+        block: |
+          account    required   pam_tally2.so
+  when: "{{ ansible_distribution_version }} == 20.04"
+  tags:
+    - syslock_u2004
+    - logins
+
+- name: Systemlock after failed logins - Ubuntu >20.04
+  block:
+    - name: faillock - modify config options
+      # use item.first[true/yes] boolean with care due to security issues in case of appended lines!
+      lineinfile:
+        path:  /etc/security/faillock.conf
+        regexp: '(^|^# ){{ item }}'
+        line: "{{ item }}"
+        firstmatch: true
+        state: present
+      with_items:
+        - "audit"
+        - "silent"
+
+    - name: faillock - modify config values
+      # use item.first[true/yes] boolean with care due to security issues in case of appended lines!
+      lineinfile:
+        path:  /etc/security/faillock.conf
+        regexp: '(^|^# ){{ item.key }}\ '
+        line: "{{ item.key }} = {{ item.value }}"
+        firstmatch: true
+        state: present
+      with_items:
+        - key: "deny"
+          value: "{{ pwd_syslock }}"
+        - key: "fail_interval"
+          value: "900"
+        - key: "unlock_time"
+          value: "{{ pwd_syslock_time }}"
+          
+    - name: faillock - modify common-auth
+      blockinfile:
+        dest: /etc/pam.d/common-auth
+        state: present
+        insertafter: "pam_sss.so"
+        marker: "## {mark} - lock system after n replies"
+        block: |
+          auth    [default=die]                   pam_faillock.so authfail
+          auth    sufficient                      pam_faillock.so authsucc
+          #auth    required                        pam_faillock.so preauth
+        backup: yes
+
+    - name: faillock - modify common-account
+      lineinfile:
+        path: /etc/pam.d/common-account
+        line: '#account required                        pam_faillock.so'
+        state: present
+
+    #- name: faillock - modify password-auth
+
+  when: "{{ ansible_distribution_version }} > 20.04 and logins_use_faillock"
+  tags:
+    - syslock_gt_u2004
+    - logins
+
+- name: pam - set password history
+  blockinfile:
+    dest: /etc/pam.d/common-password
+    state: present
+    insertafter: "details"
+    marker: "## {mark} - password history"
+    backup: yes
+    block: |
+      password        required                        pam_pwhistory.so remember={{ pwd_history }}
+  tags:
+    - pwdhistory
+    - logins
+
+- name: pam - limit password reuse
+  block:
+    - name: pam - check remember value for pam_unix.so
+      shell: grep pam_unix.so /etc/pam.d/common-password | grep -c "remember"
+      register: pam_remember
+      ignore_errors: true
+
+    - name: debug
+      debug:
+        msg: "content: {{ pam_remember }}"
+
+    - name: pam - set remember for pam_unix.so
+      lineinfile:
+        path: "/etc/pam.d/common-password"
+        regexp: "^(.*pam_unix.so.*)$"
+        line: '\1 remember=5'
+        backrefs: yes
+        backup: yes
+      when: pam_remember.stdout == "0"
+  tags:
+    - pam_limit_pwd_reuse
+    - logins
+
+- name: set password age
+  template:
+    src: login.j2
+    dest: /etc/login.defs
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
+  tags:
+    - pdwage
+    - logins
+
+- name: root login via local terminals, only
+  copy:
+    src: securetty
+    dest: /etc/
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - localrootonly
+    - logins
+
+- name: useradd - set default user inacitvity timeout
+  lineinfile:
+    path: /etc/default/useradd
+    regexp: '(^|^# )INACTIVE\='
+    line: "INACTIVE={{ lock_user_inactive }}"
+    state: present
+  tags:
+    - useradd
+    - logins
+
+- name: system - interactive session timeout
+  blockinfile:
+    path: /etc/profile
+    insertafter: "auth       required   pam_wheel.so"
+    marker: "## {mark} - use group sugroup"
+    block: |
+      TMOUT=900
+      readonly TMOUT
+      export TMOUT
+  tags:
+    - tmout
+    - logins
+
+- name: su - prevent executions by using su and keep group empty
+  block:
+  - name: su - set group for pam_wheel.so
+    lineinfile:
+      path: /etc/group
+      regexp: '^sugroup'
+      line: "sugroup:x:71:"
+      insertafter: '\:60\:'
+      state: present
+  - name: su - modify su in pam.d
+    blockinfile:
+      path: /etc/pam.d/su
+      insertafter: "auth       required   pam_wheel.so"
+      marker: "## {mark} - use group sugroup"
+      block: "auth       required   pam_wheel.so use_uid group=sugroup"
+  tags:
+    - sudoexec
+    - logins
+
+- name: secure ssh access
+  block:
+    - name: sshd - modify config keys
+      # use item.first[true/yes] boolean with care due to security issues in case of appended lines!
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        firstmatch: "{{ item.first }}"
+        regexp: '(^|^#){{ item.key }}\ '
+        line: "{{ item.key }} {{ item.value }}"
+        backup: true
+        state: present
+      with_items:
+        - key: "Port"
+          value: "22"
+          first: "no"
+        - key: "AddressFamily"
+          value: "inet"
+          first: "no"
+        - key: "ListenAddress"
+          value: "0.0.0.0"
+          first: "yes"
+        - key: "AllowGroups"
+          value: "sudo"
+          first: "no"
+        - key: "PermitRootLogin"
+          value: "no"
+          first: "no"
+        - key: "PermitEmptyPasswords"
+          value: "no"
+          first: "no"
+        - key: "UsePAM"
+          value: "yes"
+          first: "no"
+        - key: "ChallengeResponseAuthentication"
+          value: "no"
+          first: "no"
+        - key: "HostbasedAuthentication"
+          value: "no"
+          first: "no"
+        - key: "PubkeyAuthentication"
+          value: "yes"
+          first: "no"
+        - key: "MaxAuthTries"
+          value: "5"
+          first: "no"
+        - key: "Ciphers"
+          value: "chacha20-poly1305@openssh.com"
+          first: "no"
+        - key: "FingerprintHash"
+          value: "sha256"
+          first: "no"
+        - key: "HostbasedAcceptedKeyTypes"
+          value: "ssh-ed25519"
+          first: "no"
+        - key: "HostKeyAlgorithms"
+          value: "sk-ssh-ed25519@openssh.com,ssh-ed25519"
+          first: "no"
+        - key: "KexAlgorithms"
+          value: "curve25519-sha256@libssh.org"
+          first: "no"
+        - key: "MACs"
+          value: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"
+          first: "no"
+        - key: "PubkeyAcceptedKeyTypes"
+          value: "sk-ssh-ed25519@openssh.com,ssh-ed25519"
+          first: "no"
+        - key: "PrintMotd"
+          value: "no"
+          first: "no"
+        - key: "RekeyLimit"
+          value: "1G 1h"
+          first: "no"
+        - key: "ClientAliveInterval"
+          value: "10"
+          first: "no"
+        - key: "ClientAliveCountMax"
+          value: "60"
+          first: "no"
+        - key: "TCPKeepAlive"
+          value: "no"
+          first: "no"
+        - key: "AcceptEnv"
+          value: "LANG LC_*"
+          first: "no"
+        - key: "AllowAgentForwarding"
+          value: "no"
+          first: "no"
+        - key: "DebianBanner"
+          value: "no"
+          first: "no"
+        - key: "ExposeAuthInfo"
+          value: "no"
+          first: "no"
+        - key: "PermitUserEnvironment"
+          value: "no"
+          first: "no"
+        - key: "PermitUserRC"
+          value: "no"
+          first: "no"
+        - key: "StrictModes"
+          value: "yes"
+          first: "no"
+        - key: "AllowStreamLocalForwarding"
+          value: "no"
+          first: "no"
+        - key: "AllowTcpForwarding"
+          value: "no"
+          first: "no"
+        - key: "DisableForwarding"
+          value: "yes"
+          first: "no"
+        - key: "GateWayPorts"
+          value: "no"
+          first: "no"
+        - key: "PermitTunnel"
+          value: "no"
+          first: "no"
+        - key: "SyslogFacility"
+          value: "AUTH"
+          first: "no"
+        - key: "LogLevel"
+          value: "INFO"
+          first: "no"
+        - key: "AuthenticationMethods"
+          value: "publickey"
+          first: "no"
+        - key: "PasswordAuthentication"
+          value: "no"
+          first: "no"
+        - key: "X11Forwarding"
+          value: "no"
+          first: "no"
+        - key: "UseDNS"
+          value: "no"
+          first: "no"
+
+    - name: sshd - disabling keys
+      replace:
+        path: /etc/ssh/sshd_config
+        regexp: "^({{ item }}.*)"
+        replace: '#\1'
+      with_items:
+        - "Banner"
+        - "PrintLastLog"
+
+    - name: restarting sshd
+      service:
+        name: sshd
+        state: started
+      notify: clear caches
+  tags:
+    - logins
+
+- name: preserve login fallback
+  block:
+    - name: pam other - remove includes
+      lineinfile:
+        path: /etc/pam.d/other
+        regexp: "^@include"
+        state: absent
+
+    - name: pam other - add rules
+      lineinfile:
+        path: /etc/pam.d/other
+        line: "{{ item }}"
+        state: present
+      with_items:
+        - "auth required pam_deny.so"
+        - "auth required pam_warn.so"
+        - "account required pam_deny.so"
+        - "account required pam_warn.so"
+        - "password required pam_deny.so"
+        - "password required pam_warn.so"
+        - "session required pam_deny.so"
+        - "session required pam_warn.so"
+  tags:
+    - logins
+
+- name: pam login - add lastlog rule
+  lineinfile:
+    path: /etc/pam.d/login
+    regex: "session.*optional.*pam_lastlog.so"
+    line: "session    optional   pam_lastlog.so"
+    state: present
+    insertbefore: "^# Standard Un*x"
+  tags:
+    - logins
+
+- name: run queued handlers
+  meta: flush_handlers
+  tags:
+    - logins

@@ -1,0 +1,12 @@
+[Unit]
+Description=Disable Module Loading
+# run after whole system has been started
+After=multi-user.target
+Requires=multi-user.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+User=root
+ExecStart=/sbin/sysctl -w kernel.modules_disabled=1
+[Install]
+WantedBy=multi-user.target
