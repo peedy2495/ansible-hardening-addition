@@ -42,7 +42,7 @@
     regexp: "(^{{ item }}.*)"
     replace: '#\1'
   with_items:
-    - "DatabaseDirectory"
+    - "DatabaseMirror"
   when: clamav_offlinedb
   tags:
     - ext_roles
