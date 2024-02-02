@@ -259,6 +259,15 @@
         group: root
         mode: 0644
       notify: reboot system
+    - name: preload kernel-modules on boot for system relevant items
+      copy:
+        src: system.conf
+        dest: /etc/modules-load.d/
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
+      notify: reboot system
   tags:
     - kernel
 
