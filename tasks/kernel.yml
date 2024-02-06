@@ -252,24 +252,17 @@
         state: started
     - name: preload kernel-modules on boot for using usb attached storage
       copy:
-        src: usb-storage.conf
+        src: "{{ item }}"
         dest: /etc/modules-load.d/
-        force: yes
+        force: true
         owner: root
         group: root
         mode: 0644
-      notify: reboot system
-    - name: preload kernel-modules on boot for system relevant items
-      copy:
-        src: system.conf
-        dest: /etc/modules-load.d/
-        force: yes
-        owner: root
-        group: root
-        mode: 0644
+      with_fileglob: "modprobe_*.conf"
       notify: reboot system
   tags:
     - kernel
+    - wip
 
 - name: blacklist unused modules
   block:

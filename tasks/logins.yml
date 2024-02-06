@@ -193,7 +193,7 @@
 - name: system - interactive session timeout
   blockinfile:
     path: /etc/profile
-    insertafter: "auth       required   pam_wheel.so"
+    insertafter: EOF
     marker: "## {mark} - use group sugroup"
     block: |
       TMOUT=900
