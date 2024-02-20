@@ -262,7 +262,6 @@
       notify: reboot system
   tags:
     - kernel
-    - wip
 
 - name: blacklist unused modules
   block:
