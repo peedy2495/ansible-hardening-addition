@@ -1,10 +1,4 @@
 # create new password hashes before runing this task
-
-- name: load users
-  include_vars: users.yml
-  tags:
-    - users
-
 - name: change root password
   user:
     name: "root"

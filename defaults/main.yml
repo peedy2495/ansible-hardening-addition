@@ -19,6 +19,15 @@ clamav_localcache: "{{nexus_proxy_proto}}://{{nexus_proxy}}:{{nexus_proxy_port}}
 clamav_dbmirror: "database.clamav.net"
 clamav_cldcompress: "yes"
 
+# antirootkits configuration
+antirootkits_mail_from: "root@localhost"
+antirootkits_mail_to: "root@localhost"
+
+rkhunter: true
+chkrootkit: true
+unhide: true
+shelldetector: false
+
 # print statistics of vulnerabilies in executable binaries - time expensive!
 compiling_summaries: no
 
@@ -36,6 +45,10 @@ pwd_age_warn: "30"
 
 # Logins
 set_root_password: yes
+
+# pwd: ChangeMe
+root_pwd: "$6$XE01SFAK8lyvvcNV$FGAetKVIYeShitkln425hum9yxpaYEPOA1QqJjHCxCXE2jG2.2FqFaN8zx4lE7xf7ckyqlw63Mhre0h19czOf1"
+
 remove_login_userlist: yes
 lock_user_inactive: 30
 logins_use_faillock: false

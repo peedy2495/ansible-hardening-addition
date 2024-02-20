@@ -1,20 +1,8 @@
-# !deprecated! prerequisites: run 'ansible-galaxy install -r requirements.yml'
+# prerequisites: run 'ansible-galaxy install -r requirements.yml'
 # get ext roles:
 #   https://github.com/mablanco/ansible-antirootkits.git
 #   https://github.com/geerlingguy/ansible-role-clamav.git
 
-
-- name: ansible-rootkits - start
-  block:
-  - name: ansible-rootkits - load custom vars
-    include_vars: ansible-rootkits_custom.yml
-
-  - name: ansible-antirootkits - play role
-    import_role:
-      name: ansible-antirootkits
-  tags:
-    - ext_roles
-    - antirootkits
 
 - name: rkhunter - whitelisted processes
   lineinfile:
@@ -28,13 +16,6 @@
   tags:
     - ext_roles
     - antirootkits
-
-- name: clamav - play ansible-role-clamav role
-  import_role:
-    name: ansible-role-clamav
-  tags:
-    - ext_roles
-    - clamav
 
 - name: clamav - configure freshclam for local signatue caching 1/2
   replace:
@@ -68,11 +49,4 @@
     state: restarted
   tags:
     - ext_roles
-    - clamav
-
-- name: run queued handlers
-  meta: flush_handlers
-  tags:
-    - ext_roles
-    - antirootkits
     - clamav
