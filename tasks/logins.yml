@@ -65,7 +65,6 @@
   tags:
     - syslock_u2004
     - logins
-    - wip
 
 - name: Systemlock after failed logins - Ubuntu >20.04
   block:
@@ -117,7 +116,7 @@
 
     #- name: faillock - modify password-auth
 
-  when: "{{ ansible_distribution_version }} > 20.04 and logins_use_faillock"
+  when: ansible_distribution_version > '20.04' and logins_use_faillock"
   tags:
     - syslock_gt_u2004
     - logins
