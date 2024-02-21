@@ -61,10 +61,11 @@
         marker: "## {mark} - consider login counter for sudo"
         block: |
           account    required   pam_tally2.so
-  when: "{{ ansible_distribution_version }} == 20.04"
+  when: ansible_distribution_version == '20.04'
   tags:
     - syslock_u2004
     - logins
+    - wip
 
 - name: Systemlock after failed logins - Ubuntu >20.04
   block:
