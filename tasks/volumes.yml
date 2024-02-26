@@ -10,5 +10,4 @@
     
       gsettings set org.gnome.desktop.media-handling automount false
   tags:
-   - volumes
    - no_automounts

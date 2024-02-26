@@ -14,7 +14,6 @@
   when: remove_login_userlist
   tags:
     - system_hide_userlist
-    - system
 
 - name: gdm - disable xdmcp
   lineinfile:
@@ -25,7 +24,6 @@
     state: present
   tags:
     - gdm_disable_xdmp
-    - system
 
 - name: prevent automount - remove autofs
   apt:
@@ -34,8 +32,6 @@
     state: absent
     purge: yes
     update_cache: no
-  tags:
-    - system
 
 - name: usbauth - limit usage of usb devices
   block:
@@ -57,8 +53,6 @@
 
     - name: usbauth - init
       shell: usbauth init
-  tags:
-    - system
 
 - name: apparmor
   block:
@@ -94,7 +88,6 @@
       shell: aa-enforce /etc/apparmor.d/*
   tags:
     - apparmor
-    - system
 
 - name: apparmor - bootloader
   block:
@@ -131,7 +124,6 @@
   tags:
     - apparmor
     - apparmor_boot
-    - system
 
 - name: more restrictive file permissions ...
   block:
@@ -227,8 +219,6 @@
         group: root
         mode: 0644
       with_items: "{{ host_pub_keys.files }}"
-  tags:
-    - system
 
 - name: cron & at
   block:
@@ -250,8 +240,6 @@
       with_items:
         - /etc/cron.allow
         - /etc/at.allow
-  tags:
-    - system
 
 - name: syslogs
   block:
@@ -294,7 +282,6 @@
           value: "0755"
   tags:
     - syslogs
-    - system
 
 - name: empty issue files
   lineinfile:
@@ -304,8 +291,6 @@
   with_items:
     - /etc/issue
     - /etc/issue.net
-  tags:
-    - system
 
 - name: create compiling summaries of reachable binaries
   block:
@@ -318,11 +303,7 @@
         prompt: "{{ summary_compiling_check.stdout_lines }}"
         seconds: 2
   when: compiling_summaries
-  tags:
-    - system
     - summary-compiling-check
 
 - name: run queued handlers
   meta: flush_handlers
-  tags:
-    - system

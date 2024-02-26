@@ -14,7 +14,6 @@
     - regexp: "(^|^#)ALLOWIPCPROC="
       line: "ALLOWIPCPROC=/usr/bin/gnome-shell"
   tags:
-    - ext_roles
     - antirootkits
 
 - name: clamav - configure freshclam for local signatue caching 1/2
@@ -26,7 +25,7 @@
     - "DatabaseMirror"
   when: clamav_offlinedb
   tags:
-    - ext_roles
+    - clamav
 
 - name: clamav - configure freshclam for local signatue caching 2/2
   lineinfile:
@@ -41,12 +40,11 @@
       value: "no"
   when: clamav_offlinedb
   tags:
-    - ext_roles
+    - clamav
 
 - name: clamav - update signatures
   service:
     name: clamav-freshclam
     state: restarted
   tags:
-    - ext_roles
     - clamav

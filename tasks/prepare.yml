@@ -15,7 +15,7 @@
     - name: looking for desktop installation
       shell: apt list --installed |grep gnome-desktop
       register: search_desktop
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: set os-type - desktop
       set_fact:
@@ -28,5 +28,3 @@
       when: search_desktop.stdout_lines is not search("gnome-desktop")
 
   when: ansible_distribution == 'Ubuntu'
-  tags:
-    - prepare

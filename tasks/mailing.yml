@@ -4,8 +4,6 @@
       - mailutils
     state: present
     update_cache: yes
-  tags:
-    - mailing
 
 - name: shell - set MAIL variable for all users
   lineinfile:
@@ -16,8 +14,6 @@
     owner: root
     group: root
     mode: 0644
-  tags:
-    - mailing
 
 - name: system - create mail forwarding from root to major administrative user
   lineinfile:
@@ -28,5 +24,3 @@
     group: root
     line: "sysadmin@localhost"
     state: present
-  tags:
-    - mailing

@@ -2,12 +2,8 @@
   file:
     path: /etc/cron.d/popularity-contest
     state: absent
-  tags:
-    - telemetry
 
 - name: popularity - remove daily cronjob
   file:
     path: /etc/cron.daily/popularity-contest
     state: absent
-  tags:
-    - telemetry

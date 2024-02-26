@@ -4,15 +4,11 @@
     regexp: "hosts:"
     line: "hosts:          files dns"
     state: present
-  tags:
-    - network
 
 - name: sysctl-network - check for existent config file
   stat:
     path: /etc/sysctl.d/98-sec-net.conf
   register: sysctl_network
-  tags:
-    - network
 
 - name: harden network devices
   block:
@@ -168,8 +164,6 @@
       loop: "{{ icmp_ignore_bogus_error_responses.stdout_lines }}"
 
   when: sysctl_network.stat.exists == false
-  tags:
-    - network
 
 - name: disable ipv6
   block:
@@ -189,8 +183,6 @@
     - name: update-grub
       shell: update-grub
       when: boot_ipv6_status.stdout == "0"
-  tags:
-    - network
 
 - name: firewall - disable dhcp and icmp
   block:
@@ -224,5 +216,3 @@
         regexp: "(^-A ufw-before-input -p udp --sport 67 --dport 68 -j )(.*)$"
         replace: '\1DROP'
   when: set_firewall
-  tags:
-    - network

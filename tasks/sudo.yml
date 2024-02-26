@@ -3,8 +3,6 @@
     path: /etc/pam.d/su
     regexp: "(^# auth       required   pam_wheel.so)$"
     replace: "auth       required   pam_wheel.so"
-  tags:
-    - sudo
 
 - name: sudo - allow using terminals, only
   lineinfile:
@@ -12,8 +10,6 @@
     insertafter: "secure_path"
     line: "Defaults        requiretty"
     state: present
-  tags:
-    - sudo
 
 - name: sudo - prevent backround forking
   lineinfile:
@@ -21,8 +17,6 @@
     insertafter: "secure_path"
     line: "Defaults        use_pty"
     state: present
-  tags:
-    - sudo
 
 - name: sudo - ask for root password
   lineinfile:
@@ -30,8 +24,6 @@
     insertafter: "secure_path"
     line: "Defaults        rootpw"
     state: present
-  tags:
-    - sudo
 
 - name: sudo - separate logging
   lineinfile:
@@ -39,8 +31,6 @@
     insertafter: "secure_path"
     line: "Defaults        logfile=/var/log/sudo.log"
     state: present
-  tags:
-    - sudo
 
 - name: sudo - set login timeout
   lineinfile:
@@ -48,5 +38,3 @@
     insertafter: "secure_path"
     line: "Defaults        timestamp_timeout=15"
     state: present
-  tags:
-    - sudo

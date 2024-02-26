@@ -23,8 +23,6 @@
       - aide
       - libpam-runtime
     state: present
-  tags:
-    - software
 
 - name: remove unused packages
   apt:
@@ -56,8 +54,6 @@
     state: absent
     purge: yes
     update_cache: no
-  tags:
-    - software
 
 - name: grab hardening-check from devscrips
   block:
@@ -85,13 +81,9 @@
       file:
         path: /tmp/devscripts
         state: absent
-  tags:
-    - software
 
 - name: run queued handlers
   meta: flush_handlers
-  tags:
-    - software
 
 - name: autoremove orphanned packages
   apt:
@@ -100,7 +92,6 @@
   notify:
     - clear caches
   tags:
-    - software
     - upgrade
 
 - name: upgrade system
@@ -116,8 +107,6 @@
       until: apt_upgrade is success
       notify: reboot system
   when: upgrade_packages
-  tags:
-    - software
     - upgrade
 
 - name: installing cpu microcodes
@@ -130,5 +119,3 @@
     state: "{{ item }}"
     # be shure of pulling those packages in case of using a cached proxy
   with_items: ["absent", "present"]
-  tags:
-    - software

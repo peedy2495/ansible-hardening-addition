@@ -5,10 +5,6 @@
     update_password: always
     password: "{{ root_pwd }}"
   when: set_root_password
-  tags:
-    - users
 
 - name: keep access to home directories more restrictive
   shell: chmod -R o-rwx /home/* /root/
-  tags:
-    - users

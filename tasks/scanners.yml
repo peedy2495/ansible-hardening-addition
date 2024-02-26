@@ -2,13 +2,14 @@
   stat:
     path: /var/lib/aide/aide.db
   register: aide_db
+  tags:
+    - aide
 
 - name: AIDE - Build and Test Database
   command: /usr/sbin/aideinit -y -f
   when: not aide_db.stat.exists or aide_db_renew
   tags:
     - aide
-    - scanners
 
 - name: AIDE - Stage Database
   copy:
@@ -19,4 +20,3 @@
   #when: not aide_db.stat.exists or aide_db_renew
   tags:
     - aide
-    - scanners

@@ -8,7 +8,6 @@
     mode: 0644
   tags:
     - pwdrules
-    - logins
 
 - name: wordlists
   block:
@@ -41,7 +40,6 @@
       notify: clear caches
   tags:
     - wordlists
-    - logins
 
 - name: Systemlock after failed logins - Ubuntu 20.04
   block:
@@ -64,7 +62,6 @@
   when: ansible_distribution_version == '20.04'
   tags:
     - syslock_u2004
-    - logins
 
 - name: Systemlock after failed logins - Ubuntu >20.04
   block:
@@ -119,7 +116,6 @@
   when: ansible_distribution_version > '20.04' and logins_use_faillock
   tags:
     - syslock_gt_u2004
-    - logins
 
 - name: pam - set password history
   blockinfile:
@@ -132,7 +128,6 @@
       password        required                        pam_pwhistory.so remember={{ pwd_history }}
   tags:
     - pwdhistory
-    - logins
 
 - name: pam - limit password reuse
   block:
@@ -155,7 +150,6 @@
       when: pam_remember.stdout == "0"
   tags:
     - pam_limit_pwd_reuse
-    - logins
 
 - name: set password age
   template:
@@ -167,7 +161,6 @@
     force: yes
   tags:
     - pdwage
-    - logins
 
 - name: root login via local terminals, only
   copy:
@@ -178,7 +171,6 @@
     mode: 0644
   tags:
     - localrootonly
-    - logins
 
 - name: useradd - set default user inacitvity timeout
   lineinfile:
@@ -188,7 +180,6 @@
     state: present
   tags:
     - useradd
-    - logins
 
 - name: system - interactive session timeout
   blockinfile:
@@ -201,7 +192,6 @@
       export TMOUT
   tags:
     - tmout
-    - logins
 
 - name: su - prevent executions by using su and keep group empty
   block:
@@ -220,7 +210,6 @@
       block: "auth       required   pam_wheel.so use_uid group=sugroup"
   tags:
     - sudoexec
-    - logins
 
 - name: secure ssh access
   block:
@@ -372,8 +361,6 @@
         name: sshd
         state: started
       notify: clear caches
-  tags:
-    - logins
 
 - name: preserve login fallback
   block:
@@ -397,8 +384,6 @@
         - "password required pam_warn.so"
         - "session required pam_deny.so"
         - "session required pam_warn.so"
-  tags:
-    - logins
 
 - name: pam login - add lastlog rule
   lineinfile:
@@ -407,10 +392,6 @@
     line: "session    optional   pam_lastlog.so"
     state: present
     insertbefore: "^# Standard Un*x"
-  tags:
-    - logins
 
 - name: run queued handlers
   meta: flush_handlers
-  tags:
-    - logins

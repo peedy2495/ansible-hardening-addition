@@ -19,7 +19,6 @@
       notify: reboot system
   tags:
     - kernel_kaslr
-    - kernel
 
 - name: enable audit
   block:
@@ -42,7 +41,6 @@
       #notify: reboot system
   tags:
     - kernel_audit
-    - kernel
 
 - name: enable audit_backlog_limit
   block:
@@ -65,7 +63,6 @@
       #notify: reboot system
   tags:
     - kernel_audit_backlog_limit
-    - kernel
 
 - name: modify config
   lineinfile:
@@ -107,8 +104,6 @@
     - key: "net.core.bpf_jit_harden"
       value: "1"
   notify: reboot system
-  tags:
-    - kernel
 
 - name: modify limits
   lineinfile:
@@ -121,8 +116,6 @@
     line: "*                hard    core            0"
     state: present
   notify: reboot system
-  tags:
-    - kernel
 
 - name: default blacklisting modules
   block:
@@ -204,8 +197,6 @@
         # usb media needed
         - usb-storage
       notify: reboot system
-  tags:
-    - kernel
 
 - name: uninstall kernel extra modules
   block:
@@ -231,8 +222,6 @@
       notify: reboot system
   when: rm_extra_modules and
     not (ansible_distribution == 'Ubuntu' and os_type == 'desktop')
-  tags:
-    - kernel
 
 - name: prevent loading modules after boot
   block:
@@ -260,8 +249,6 @@
         mode: 0644
       with_fileglob: "modprobe_*.conf"
       notify: reboot system
-  tags:
-    - kernel
 
 - name: blacklist unused modules
   block:
@@ -291,8 +278,6 @@
         state: absent
       notify: clear caches
   when: blacklist_unused
-  tags:
-    - kernel
 
 - name: deactivate magic sysrq
   lineinfile:
@@ -301,10 +286,6 @@
     line: "kernel.sysrq = 0"
     state: present
   notify: reboot system
-  tags:
-    - kernel
 
 - name: run queued handlers
   meta: flush_handlers
-  tags:
-    - kernel
