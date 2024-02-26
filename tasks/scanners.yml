@@ -1,5 +1,11 @@
+- name: AIDE - Check existent Database
+  stat:
+    path: /var/lib/aide/aide.db
+  register: aide_db
+
 - name: AIDE - Build and Test Database
   command: /usr/sbin/aideinit -y -f
+  when: not aide_db.stat.exists or aide_db_renew
   tags:
     - aide
     - scanners
@@ -10,6 +16,7 @@
     dest: /var/lib/aide/aide.db
     backup: true
     remote_src: true
+  when: not aide_db.stat.exists or aide_db_renew
   tags:
     - aide
     - scanners
