@@ -16,7 +16,7 @@
     dest: /var/lib/aide/aide.db
     backup: true
     remote_src: true
-  when: not aide_db.stat.exists or aide_db_renew
+  #when: not aide_db.stat.exists or aide_db_renew
   tags:
     - aide
     - scanners
