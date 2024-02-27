@@ -107,6 +107,7 @@
       until: apt_upgrade is success
       notify: reboot system
   when: upgrade_packages
+  tags:
     - upgrade
 
 - name: installing cpu microcodes
