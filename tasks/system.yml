@@ -303,6 +303,7 @@
         prompt: "{{ summary_compiling_check.stdout_lines }}"
         seconds: 2
   when: compiling_summaries
+  tags:
     - summary-compiling-check
 
 - name: run queued handlers
