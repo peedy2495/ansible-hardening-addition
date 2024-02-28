@@ -20,7 +20,7 @@
   ansible.builtin.replace:
     path: /etc/clamav/freshclam.conf
     regexp: "(^{{ item }}.*)"
-    ansible.builtin.replace: '#\1'
+    replace: '#\1'
   with_items:
     - "DatabaseMirror"
   when: clamav_offlinedb

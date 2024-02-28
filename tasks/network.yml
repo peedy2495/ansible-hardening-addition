@@ -190,29 +190,29 @@
       ansible.builtin.replace:
         path: /etc/ufw/before.rules
         regexp: "(^-A ufw-before-input -p icmp --icmp-type destination-unreachable -j )(.*)$"
-        ansible.builtin.replace: '\1DROP'
+        replace: '\1DROP'
 
     - name: firewall - disable icmp time-exceeded
       ansible.builtin.replace:
         path: /etc/ufw/before.rules
         regexp: "(^-A ufw-before-input -p icmp --icmp-type time-exceeded -j )(.*)$"
-        ansible.builtin.replace: '\1DROP'
+        replace: '\1DROP'
 
     - name: firewall - disable icmp parameter-problem
       ansible.builtin.replace:
         path: /etc/ufw/before.rules
         regexp: "(^-A ufw-before-input -p icmp --icmp-type parameter-problem -j )(.*)$"
-        ansible.builtin.replace: '\1DROP'
+        replace: '\1DROP'
 
     - name: firewall - disable icmp echo-request
       ansible.builtin.replace:
         path: /etc/ufw/before.rules
         regexp: "(^-A ufw-before-input -p icmp --icmp-type echo-request -j )(.*)$"
-        ansible.builtin.replace: '\1DROP'
+        replace: '\1DROP'
 
     - name: firewall - block dhcp client
       ansible.builtin.replace:
         path: /etc/ufw/before.rules
         regexp: "(^-A ufw-before-input -p udp --sport 67 --dport 68 -j )(.*)$"
-        ansible.builtin.replace: '\1DROP'
+        replace: '\1DROP'
   when: set_firewall

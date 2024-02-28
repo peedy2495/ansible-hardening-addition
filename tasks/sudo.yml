@@ -2,7 +2,7 @@
   ansible.builtin.replace:
     path: /etc/pam.d/su
     regexp: "(^# auth       required   pam_wheel.so)$"
-    ansible.builtin.replace: "auth       required   pam_wheel.so"
+    replace: "auth       required   pam_wheel.so"
 
 - name: sudo - allow using terminals, only
   ansible.builtin.lineinfile:
