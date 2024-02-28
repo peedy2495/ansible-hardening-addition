@@ -1,5 +1,5 @@
 - name: installing package dependencies
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
     pkg:
       - apt-listchanges
@@ -25,7 +25,7 @@
     state: present
 
 - name: remove unused packages
-  apt:
+  ansible.builtin.apt:
     pkg:
       - apport
       - apport-symptoms
@@ -58,18 +58,18 @@
 - name: grab hardening-check from devscrips
   block:
     - name: create temporary devscripts dir
-      file:
+      ansible.builtin.file:
         path: /tmp/devscripts
         state: directory
 
     - name: download devscripts
-      shell: apt download devscripts
+      ansible.builtin.shell: apt download devscripts
 
     - name: umpack devscripts
-      shell: dpkg -x devscripts_*_amd64.deb /tmp/devscripts/
+      ansible.builtin.shell: dpkg -x devscripts_*_amd64.deb /tmp/devscripts/
 
     - name: copy hardening-check
-      copy:
+      ansible.builtin.copy:
         remote_src: yes
         src: /tmp/devscripts/usr/bin/hardening-check
         dest: /usr/bin/hardening-check
@@ -78,7 +78,7 @@
         group: root
 
     - name: remove temporary devscripts dir
-      file:
+      ansible.builtin.file:
         path: /tmp/devscripts
         state: absent
 
@@ -86,7 +86,7 @@
   meta: flush_handlers
 
 - name: autoremove orphanned packages
-  apt:
+  ansible.builtin.apt:
     autoremove: yes
     purge: yes
   notify:
@@ -97,9 +97,9 @@
 - name: upgrade system
   block:
     - name: killing any running update process
-      shell: pkill apt-get; pkill dpkg; sleep 2
+      ansible.builtin.shell: pkill apt-get; pkill dpkg; sleep 2
     - name: upgrading
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
         upgrade: yes
       register: apt_upgrade
@@ -111,7 +111,7 @@
     - upgrade
 
 - name: installing cpu microcodes
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
     pkg:
       - intel-microcode

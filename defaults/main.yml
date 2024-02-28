@@ -2,7 +2,7 @@ skip_reboots: true
 
 ## nexus cashed package proxy
 use_nexus: yes
-nexus: "ubuntu-proxy"
+nexusIP: "192.168.123.180"
 nexusPort: "8081"
 nexusProto: "http"
 
@@ -15,7 +15,7 @@ set_firewall: yes
 # clamav configuration
 clamav_offlinedb: no
 # following values will only set on clamav_offlinedb(yes)
-clamav_localcache: "{{nexusProto}}://{{nexus}}:{{nexusPort}}/repository/clamav-db/"
+clamav_localcache: "{{ nexusProto }}://{{ nexusIP }}:{{ nexusPort }}/repository/clamav-db/"
 clamav_dbmirror: "database.clamav.net"
 clamav_cldcompress: "yes"
 

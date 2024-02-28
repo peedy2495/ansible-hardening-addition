@@ -1,5 +1,5 @@
 - name: set ntp source
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/systemd/timesyncd.conf"
     regexp: '^#\s*NTP.*$'
     line: "NTP={{ ntp_source }}"
@@ -7,6 +7,6 @@
     state: present
 
 - name: restart ntp client
-  service:
+  ansible.builtin.service:
     name: systemd-timesyncd
     state: restarted

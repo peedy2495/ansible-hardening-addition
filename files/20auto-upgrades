@@ -1,5 +1,5 @@
-APT::Periodic::Update-Package-Lists "0";
-APT::Periodic::Download-Upgradeable-Packages "0";
-APT::Periodic::AutocleanInterval "0";
-APT::Periodic::Unattended-Upgrade "0";
-Dpkg::Options { "--force-confdef"; "--force-confold" }
+ansible.builtin.apt:Periodic:Update-Package-Lists "0";
+ansible.builtin.apt:Periodic:Download-Upgradeable-Packages "0";
+ansible.builtin.apt:Periodic:AutocleanInterval "0";
+ansible.builtin.apt:Periodic:Unattended-Upgrade "0";
+Dpkg:Options { "--force-confdef"; "--force-confold" }

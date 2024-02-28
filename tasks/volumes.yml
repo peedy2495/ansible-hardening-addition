@@ -1,5 +1,5 @@
 - name: gsetting - prevent automounts of external drives
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/profile.d/no_automounts.sh
     create: true
     mode: '0644'

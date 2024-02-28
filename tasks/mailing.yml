@@ -1,12 +1,12 @@
 - name: installing mail utilities
-  apt:
+  ansible.builtin.apt:
     pkg:
       - mailutils
     state: present
     update_cache: yes
 
 - name: shell - set MAIL variable for all users
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/profile.d/mail.sh
     line: "export MAIL=$HOME/Maildir/"
     state: present
@@ -16,7 +16,7 @@
     mode: 0644
 
 - name: system - create mail forwarding from root to major administrative user
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /root/.forward
     create: yes
     mode: 640

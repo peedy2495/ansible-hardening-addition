@@ -1,18 +1,18 @@
 - name: AIDE - Check existent Database
-  stat:
+  ansible.builtin.stat:
     path: /var/lib/aide/aide.db
   register: aide_db
   tags:
     - aide
 
 - name: AIDE - Build and Test Database
-  command: /usr/sbin/aideinit -y -f
+  ansible.builtin.command: /usr/sbin/aideinit -y -f
   when: not aide_db.stat.exists or aide_db_renew
   tags:
     - aide
 
 - name: AIDE - Stage Database
-  copy:
+  ansible.builtin.copy:
     src: /var/lib/aide/aide.db.new
     dest: /var/lib/aide/aide.db
     backup: true
@@ -22,7 +22,7 @@
     - aide
 
 - name: AIDE - remove duplicated database
-  file:
+  ansible.builtin.file:
     path: /var/lib/aide/aide.db.new
     state: absent
   tags:

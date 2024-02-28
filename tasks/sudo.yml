@@ -1,39 +1,39 @@
 - name: sudo - force users to be a member of group root
-  replace:
+  ansible.builtin.replace:
     path: /etc/pam.d/su
     regexp: "(^# auth       required   pam_wheel.so)$"
-    replace: "auth       required   pam_wheel.so"
+    ansible.builtin.replace: "auth       required   pam_wheel.so"
 
 - name: sudo - allow using terminals, only
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     insertafter: "secure_path"
     line: "Defaults        requiretty"
     state: present
 
 - name: sudo - prevent backround forking
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     insertafter: "secure_path"
     line: "Defaults        use_pty"
     state: present
 
 - name: sudo - ask for root password
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     insertafter: "secure_path"
     line: "Defaults        rootpw"
     state: present
 
 - name: sudo - separate logging
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     insertafter: "secure_path"
     line: "Defaults        logfile=/var/log/sudo.log"
     state: present
 
 - name: sudo - set login timeout
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     insertafter: "secure_path"
     line: "Defaults        timestamp_timeout=15"

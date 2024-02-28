@@ -1,75 +1,75 @@
 - name: preparing
-  import_tasks: prepare.yml
+  ansible.builtin.import_tasks: prepare.yml
   tags:
     - prepare
 
 - name: updater config
-  import_tasks: updates.yml
+  ansible.builtin.import_tasks: updates.yml
   tags:
    - volumes
 
 - name: preparing drives
-  import_tasks: volumes.yml
+  ansible.builtin.import_tasks: volumes.yml
   tags:
    - volumes
 
 - name: software
-  import_tasks: software.yml
+  ansible.builtin.import_tasks: software.yml
   tags:
     - software
 
 - name: networking
-  import_tasks: network.yml
+  ansible.builtin.import_tasks: network.yml
   tags:
     - network
 
 - name: users
-  import_tasks: users.yml
+  ansible.builtin.import_tasks: users.yml
   tags:
     - users
 
 - name: mailing
-  import_tasks: mailing.yml
+  ansible.builtin.import_tasks: mailing.yml
   tags:
     - mailing
 
 - name: run external roles
-  import_tasks: ext_roles.yml
+  ansible.builtin.import_tasks: ext_roles.yml
   tags:
     - ext_roles
 
 - name: misc system configurations
-  import_tasks: system.yml
+  ansible.builtin.import_tasks: system.yml
   tags:
     - system
 
 - name: sudo
-  import_tasks: sudo.yml
+  ansible.builtin.import_tasks: sudo.yml
   tags:
     - sudo
 
 - name: telemetry
-  import_tasks: telemetry.yml
+  ansible.builtin.import_tasks: telemetry.yml
   tags:
     - telemetry
 
 - name: time
-  import_tasks: time.yml
+  ansible.builtin.import_tasks: time.yml
   tags:
     - ntp
 
 - name: kernel
-  import_tasks: kernel.yml
+  ansible.builtin.import_tasks: kernel.yml
   tags:
     - kernel
 
 - name: restrictive logins
-  import_tasks: logins.yml
+  ansible.builtin.import_tasks: logins.yml
   tags:
     - logins
 
 - name: System scanners
-  import_tasks: scanners.yml
+  ansible.builtin.import_tasks: scanners.yml
   tags:
     - scanners
 

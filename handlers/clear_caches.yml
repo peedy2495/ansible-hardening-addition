@@ -1,2 +1,2 @@
 - name: clear all caches
-  shell: sync; echo 3 > /proc/sys/vm/drop_caches
+  ansible.builtin.shell: sync; echo 3 > /proc/sys/vm/drop_caches

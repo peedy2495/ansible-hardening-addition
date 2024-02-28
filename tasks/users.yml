@@ -1,10 +1,10 @@
 # create new password hashes before runing this task
 - name: change root password
-  user:
+  ansible.builtin.user:
     name: "root"
     update_password: always
     password: "{{ rootPwdSHA512 }}"
   when: set_root_password
 
 - name: keep access to home directories more restrictive
-  shell: chmod -R o-rwx /home/* /root/
+  ansible.builtin.shell: chmod -R o-rwx /home/* /root/

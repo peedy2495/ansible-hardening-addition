@@ -1,9 +1,9 @@
 - name: popularity - remove cronjob
-  file:
+  ansible.builtin.file:
     path: /etc/cron.d/popularity-contest
     state: absent
 
 - name: popularity - remove daily cronjob
-  file:
+  ansible.builtin.file:
     path: /etc/cron.daily/popularity-contest
     state: absent

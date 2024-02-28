@@ -1,12 +1,12 @@
 - name: enable kaslr
   block:
     - name: boot-option - check if kaslr is already disabled
-      shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "kaslr"
+      ansible.builtin.shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "kaslr"
       register: boot_kaslr_status
       ignore_errors: true
 
     - name: boot-option - enable kaslr
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "/etc/default/grub"
         regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="(.*)"'
         line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 kaslr"'
@@ -14,7 +14,7 @@
       when: boot_kaslr_status.stdout == "0"
 
     - name: update-grub
-      shell: update-grub
+      ansible.builtin.shell: update-grub
       when: boot_kaslr_status.stdout == "0"
       notify: reboot system
   tags:
@@ -23,12 +23,12 @@
 - name: enable audit
   block:
     - name: boot-option - check if audit is already disabled
-      shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "audit"
+      ansible.builtin.shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "audit"
       register: boot_audit_status
       ignore_errors: true
 
     - name: boot-option - enable audit
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "/etc/default/grub"
         regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="(.*)"'
         line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 audit=1"'
@@ -36,7 +36,7 @@
       when: boot_audit_status.stdout == "0"
 
     - name: update-grub
-      shell: update-grub
+      ansible.builtin.shell: update-grub
       when: boot_audit_status.stdout == "0"
       #notify: reboot system
   tags:
@@ -45,12 +45,12 @@
 - name: enable audit_backlog_limit
   block:
     - name: boot-option - check if audit_backlog_limit is already disabled
-      shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "audit_backlog_limit"
+      ansible.builtin.shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "audit_backlog_limit"
       register: boot_audit_backlog_limit_status
       ignore_errors: true
 
     - name: boot-option - enable audit_backlog_limit
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "/etc/default/grub"
         regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="(.*)"'
         line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 audit_backlog_limit=8192"'
@@ -58,14 +58,14 @@
       when: boot_audit_backlog_limit_status.stdout == "0"
 
     - name: update-grub
-      shell: update-grub
+      ansible.builtin.shell: update-grub
       when: boot_audit_backlog_limit_status.stdout == "0"
       #notify: reboot system
   tags:
     - kernel_audit_backlog_limit
 
 - name: modify config
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysctl.d/98-sec-kernel.conf
     create: yes
     mode: 644
@@ -106,7 +106,7 @@
   notify: reboot system
 
 - name: modify limits
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/security/limits.conf
     create: yes
     mode: 644
@@ -120,7 +120,7 @@
 - name: default blacklisting modules
   block:
     - name: create a virgin blacklist file
-      file:
+      ansible.builtin.file:
         path: /etc/modprobe.d/blacklist-hardening.conf
         mode: 644
         owner: root
@@ -128,7 +128,7 @@
         state: touch
 
     - name: modify blacklist - adding undesirable modules
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/modprobe.d/blacklist-hardening.conf
         regexp: "install {{ item }}\ "
         line: "install {{ item }} /bin/true"
@@ -188,7 +188,7 @@
         - btusb
         - uvcvideo
     - name: modify blacklist - activate retroactice needs
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/modprobe.d/blacklist-hardening.conf
         regexp: "install {{ item }}\ "
         line: "install {{ item }} /bin/true"
@@ -201,21 +201,21 @@
 - name: uninstall kernel extra modules
   block:
     - name: get current kernel version
-      shell: uname -r
+      ansible.builtin.shell: uname -r
       ignore_errors: true
       register: kernel_version
     - name: remove kernel extra modules
-      apt:
+      ansible.builtin.apt:
         pkg:
           - "linux-modules-extra-{{ kernel_version.stdout }}"
         state: absent
         purge: yes
         update_cache: no
     - name: autoremove orphanned packages
-      apt:
+      ansible.builtin.apt:
         autoremove: yes
     - name: keep microcode updates
-      apt:
+      ansible.builtin.apt:
         pkg:
           - intel-microcode
           - amd64-microcode
@@ -226,7 +226,7 @@
 - name: prevent loading modules after boot
   block:
     - name: deploy kernel-modules-disabled.service
-      copy:
+      ansible.builtin.copy:
         src: kernel-modules-disabled.service
         dest: /etc/systemd/system/
         force: yes
@@ -234,13 +234,13 @@
         group: root
         mode: 0755
     - name: start kernel-modules-disabled.service
-      systemd:
+      ansible.builtin.systemd:
         name: kernel-modules-disabled.service
         daemon_reload: yes
         enabled: yes
         state: started
     - name: preload kernel-modules on boot for using usb attached storage
-      copy:
+      ansible.builtin.copy:
         src: "{{ item }}"
         dest: /etc/modules-load.d/
         force: true
@@ -253,14 +253,14 @@
 - name: blacklist unused modules
   block:
     - name: determine available modules
-      shell: find /lib/modules/$(uname -r)/ -type f -name *.ko -printf "%f\n" | sed s/\.ko// | sort
+      ansible.builtin.shell: find /lib/modules/$(uname -r)/ -type f -name *.ko -printf "%f\n" | sed s/\.ko// | sort
       register: modules_available
     - name: determine loaded modules
-      shell: lsmod | awk '{print $1}' | sort
+      ansible.builtin.shell: lsmod | awk '{print $1}' | sort
       register: modules_loaded
 
     - name: write deltas to blacklist
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/modprobe.d/blacklist-unused.conf
         create: yes
         owner: root
@@ -271,7 +271,7 @@
       loop: "{{modules_available.stdout_lines}}"
 
     - name: unused blacklist - exceptions
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/modprobe.d/blacklist-unused.conf
         regexp: "install {{ item }}\ "
         line: "install {{ item }} /bin/true"
@@ -280,7 +280,7 @@
   when: blacklist_unused
 
 - name: deactivate magic sysrq
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysctl.d/10-magic-sysrq.conf
     regexp: "^kernel.sysrq"
     line: "kernel.sysrq = 0"

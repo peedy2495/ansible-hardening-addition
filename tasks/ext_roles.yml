@@ -5,7 +5,7 @@
 
 
 - name: rkhunter - whitelisted processes
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/rkhunter.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -17,10 +17,10 @@
     - antirootkits
 
 - name: clamav - configure freshclam for local signatue caching 1/2
-  replace:
+  ansible.builtin.replace:
     path: /etc/clamav/freshclam.conf
     regexp: "(^{{ item }}.*)"
-    replace: '#\1'
+    ansible.builtin.replace: '#\1'
   with_items:
     - "DatabaseMirror"
   when: clamav_offlinedb
@@ -28,7 +28,7 @@
     - clamav
 
 - name: clamav - configure freshclam for local signatue caching 2/2
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/clamav/freshclam.conf
     regexp: "(^{{ item.var }})(.*)$"
     line: "{{ item.var }} {{ item.value }}"
@@ -43,7 +43,7 @@
     - clamav
 
 - name: clamav - update signatures
-  service:
+  ansible.builtin.service:
     name: clamav-freshclam
     state: restarted
   tags:

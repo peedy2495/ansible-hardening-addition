@@ -1,5 +1,5 @@
 - name: auto-upgrades - disable automatic updates/lookups
-  copy:
+  ansible.builtin.copy:
     src: 20auto-upgrades
     dest: /etc/apt/apt.conf.d/
     force: yes
@@ -8,29 +8,29 @@
     mode: 0644
 
 - name: remove unattended-upgrades
-  apt:
+  ansible.builtin.apt:
     name: unattended-upgrades
     purge: yes
     autoremove: yes
 
 - name: disable daily upgrade timer
-  systemd:
+  ansible.builtin.systemd:
     name: apt-daily-upgrade.timer
     state: stopped
 
 - name: apt - disable daily upgrade service
-  systemd:
+  ansible.builtin.systemd:
     name: apt-daily-upgrade.service
     enabled: no
     masked: yes
 
 - name: apt - disable daily timer
-  systemd:
+  ansible.builtin.systemd:
     name: apt-daily.timer
     state: stopped
 
 - name: apt - disable daily service
-  systemd:
+  ansible.builtin.systemd:
     name: apt-daily.service
     enabled: no
     masked: yes

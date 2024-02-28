@@ -1,5 +1,5 @@
 - name: password rules
-  copy:
+  ansible.builtin.copy:
     src: pwquality.conf
     dest: /etc/security/
     force: yes
@@ -12,20 +12,20 @@
 - name: wordlists
   block:
     - name: set var vor githubusercontent for internet
-      set_fact:
+      ansible.builtin.set_fact:
         raw_githubusercontent_url: "https://raw.githubusercontent.com"
       when: not use_nexus
 
     - name: set var vor githubusercontent for internet
-      set_fact:
-        raw_githubusercontent_url: "{{ nexusProto }}://{{ nexus }}:{{ nexusPort }}/repository/raw-githubusercontent"
+      ansible.builtin.set_fact:
+        raw_githubusercontent_url: "{{ nexusProto }}://{{ nexusIP }}:{{ nexusPort }}/repository/raw-githubusercontent"
       when: use_nexus
 
     - name: load wordlists
-      include_vars: wordlists.yml
+      ansible.builtin.include_vars: wordlists.yml
 
     - name: pull desired wordlists
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ item.url }}"
         timeout: 30
         dest: "/usr/share/dict/{{ item.name }}"
@@ -35,7 +35,7 @@
         - "{{cracklib_wordlists}}"
 
     - name: Update cracklib database
-      shell: create-cracklib-dict /usr/share/dict/*
+      ansible.builtin.shell: create-cracklib-dict /usr/share/dict/*
       when: pull_wordlists.changed
       notify: clear caches
   tags:
@@ -44,7 +44,7 @@
 - name: Systemlock after failed logins - Ubuntu 20.04
   block:
     - name: lock system after n retries
-      blockinfile:
+      ansible.builtin.blockinfile:
         dest: /etc/pam.d/common-auth
         state: present
         insertafter: "details"
@@ -52,7 +52,7 @@
         block: |
           auth    required                        pam_tally2.so onerr=fail audit silent deny={{ pwd_syslock }} unlock_time={{ pwd_syslock_time }}
     - name: consider login counter for sudo
-      blockinfile:
+      ansible.builtin.blockinfile:
         dest: /etc/pam.d/sudo
         state: present
         insertafter: "PAM"
@@ -67,7 +67,7 @@
   block:
     - name: faillock - modify config options
       # use item.first[true/yes] boolean with care due to security issues in case of appended lines!
-      lineinfile:
+      ansible.builtin.lineinfile:
         path:  /etc/security/faillock.conf
         regexp: '(^|^# ){{ item }}'
         line: "{{ item }}"
@@ -79,7 +79,7 @@
 
     - name: faillock - modify config values
       # use item.first[true/yes] boolean with care due to security issues in case of appended lines!
-      lineinfile:
+      ansible.builtin.lineinfile:
         path:  /etc/security/faillock.conf
         regexp: '(^|^# ){{ item.key }}\ '
         line: "{{ item.key }} = {{ item.value }}"
@@ -94,7 +94,7 @@
           value: "{{ pwd_syslock_time }}"
           
     - name: faillock - modify common-auth
-      blockinfile:
+      ansible.builtin.blockinfile:
         dest: /etc/pam.d/common-auth
         state: present
         insertafter: "pam_sss.so"
@@ -106,7 +106,7 @@
         backup: yes
 
     - name: faillock - modify common-account
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/pam.d/common-account
         line: '#account required                        pam_faillock.so'
         state: present
@@ -118,7 +118,7 @@
     - syslock_gt_u2004
 
 - name: pam - set password history
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/pam.d/common-password
     state: present
     insertafter: "details"
@@ -132,16 +132,16 @@
 - name: pam - limit password reuse
   block:
     - name: pam - check remember value for pam_unix.so
-      shell: grep pam_unix.so /etc/pam.d/common-password | grep -c "remember"
+      ansible.builtin.shell: grep pam_unix.so /etc/pam.d/common-password | grep -c "remember"
       register: pam_remember
       ignore_errors: true
 
     - name: debug
-      debug:
+      ansible.builtin.debug:
         msg: "content: {{ pam_remember }}"
 
     - name: pam - set remember for pam_unix.so
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "/etc/pam.d/common-password"
         regexp: "^(.*pam_unix.so.*)$"
         line: '\1 remember=5'
@@ -152,7 +152,7 @@
     - pam_limit_pwd_reuse
 
 - name: set password age
-  template:
+  ansible.builtin.template:
     src: login.j2
     dest: /etc/login.defs
     owner: root
@@ -163,7 +163,7 @@
     - pdwage
 
 - name: root login via local terminals, only
-  copy:
+  ansible.builtin.copy:
     src: securetty
     dest: /etc/
     owner: root
@@ -173,7 +173,7 @@
     - localrootonly
 
 - name: useradd - set default user inacitvity timeout
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/default/useradd
     regexp: '(^|^# )INACTIVE\='
     line: "INACTIVE={{ lock_user_inactive }}"
@@ -182,7 +182,7 @@
     - useradd
 
 - name: system - interactive session timeout
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/profile
     insertafter: EOF
     marker: "## {mark} - use group sugroup"
@@ -196,14 +196,14 @@
 - name: su - prevent executions by using su and keep group empty
   block:
   - name: su - set group for pam_wheel.so
-    lineinfile:
+    ansible.builtin.lineinfile:
       path: /etc/group
       regexp: '^sugroup'
       line: "sugroup:x:71:"
       insertafter: '\:60\:'
       state: present
   - name: su - modify su in pam.d
-    blockinfile:
+    ansible.builtin.blockinfile:
       path: /etc/pam.d/su
       insertafter: "auth       required   pam_wheel.so"
       marker: "## {mark} - use group sugroup"
@@ -215,7 +215,7 @@
   block:
     - name: sshd - modify config keys
       # use item.first[true/yes] boolean with care due to security issues in case of appended lines!
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/ssh/sshd_config
         firstmatch: "{{ item.first }}"
         regexp: '(^|^#){{ item.key }}\ '
@@ -348,16 +348,16 @@
           first: "no"
 
     - name: sshd - disabling keys
-      replace:
+      ansible.builtin.replace:
         path: /etc/ssh/sshd_config
         regexp: "^({{ item }}.*)"
-        replace: '#\1'
+        ansible.builtin.replace: '#\1'
       with_items:
         - "Banner"
         - "PrintLastLog"
 
     - name: restarting sshd
-      service:
+      ansible.builtin.service:
         name: sshd
         state: started
       notify: clear caches
@@ -365,13 +365,13 @@
 - name: preserve login fallback
   block:
     - name: pam other - remove includes
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/pam.d/other
         regexp: "^@include"
         state: absent
 
     - name: pam other - add rules
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/pam.d/other
         line: "{{ item }}"
         state: present
@@ -386,7 +386,7 @@
         - "session required pam_warn.so"
 
 - name: pam login - add lastlog rule
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/pam.d/login
     regex: "session.*optional.*pam_lastlog.so"
     line: "session    optional   pam_lastlog.so"
