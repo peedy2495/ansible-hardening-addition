@@ -3,7 +3,7 @@
   user:
     name: "root"
     update_password: always
-    password: "{{ root_pwd }}"
+    password: "{{ rootPwdSHA512 }}"
   when: set_root_password
 
 - name: keep access to home directories more restrictive

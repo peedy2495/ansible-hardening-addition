@@ -2,9 +2,9 @@ skip_reboots: true
 
 ## nexus cashed package proxy
 use_nexus: yes
-nexus_proxy: "ubuntu-proxy"
-nexus_proxy_port: "8081"
-nexus_proxy_proto: "http"
+nexus: "ubuntu-proxy"
+nexusPort: "8081"
+nexusProto: "http"
 
 # update system
 upgrade_packages: yes
@@ -15,7 +15,7 @@ set_firewall: yes
 # clamav configuration
 clamav_offlinedb: no
 # following values will only set on clamav_offlinedb(yes)
-clamav_localcache: "{{nexus_proxy_proto}}://{{nexus_proxy}}:{{nexus_proxy_port}}/repository/clamav-db/"
+clamav_localcache: "{{nexusProto}}://{{nexus}}:{{nexusPort}}/repository/clamav-db/"
 clamav_dbmirror: "database.clamav.net"
 clamav_cldcompress: "yes"
 
@@ -50,7 +50,7 @@ pwd_age_warn: "30"
 set_root_password: yes
 
 # pwd: ChangeMe
-root_pwd: "$6$XE01SFAK8lyvvcNV$FGAetKVIYeShitkln425hum9yxpaYEPOA1QqJjHCxCXE2jG2.2FqFaN8zx4lE7xf7ckyqlw63Mhre0h19czOf1"
+rootPwdSHA512: "$6$XE01SFAK8lyvvcNV$FGAetKVIYeShitkln425hum9yxpaYEPOA1QqJjHCxCXE2jG2.2FqFaN8zx4lE7xf7ckyqlw63Mhre0h19czOf1"
 
 remove_login_userlist: yes
 lock_user_inactive: 30

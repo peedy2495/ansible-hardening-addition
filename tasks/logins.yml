@@ -18,7 +18,7 @@
 
     - name: set var vor githubusercontent for internet
       set_fact:
-        raw_githubusercontent_url: "{{ nexus_proxy_proto }}://{{ nexus_proxy }}:{{ nexus_proxy_port }}/repository/raw-githubusercontent"
+        raw_githubusercontent_url: "{{ nexusProto }}://{{ nexus }}:{{ nexusPort }}/repository/raw-githubusercontent"
       when: use_nexus
 
     - name: load wordlists
