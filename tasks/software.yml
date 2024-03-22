@@ -85,31 +85,6 @@
 - name: run queued handlers
   meta: flush_handlers
 
-- name: autoremove orphanned packages
-  ansible.builtin.apt:
-    autoremove: yes
-    purge: yes
-  notify:
-    - clear caches
-  tags:
-    - upgrade
-
-- name: upgrade system
-  block:
-    - name: killing any running update process
-      ansible.builtin.shell: pkill apt-get; pkill dpkg; sleep 2
-    - name: upgrading
-      ansible.builtin.apt:
-        update_cache: yes
-        upgrade: yes
-      register: apt_upgrade
-      retries: 5
-      until: apt_upgrade is success
-      notify: reboot system
-  when: upgrade_packages
-  tags:
-    - upgrade
-
 - name: installing cpu microcodes
   ansible.builtin.apt:
     update_cache: yes
