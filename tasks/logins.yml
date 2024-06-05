@@ -14,12 +14,12 @@
     - name: set var vor githubusercontent for internet
       ansible.builtin.set_fact:
         raw_githubusercontent_url: "https://raw.githubusercontent.com"
-      when: not use_nexus
+      when: not nexus
 
     - name: set var vor githubusercontent for internet
       ansible.builtin.set_fact:
         raw_githubusercontent_url: "{{ nexusProto }}://{{ nexusIP }}:{{ nexusPort }}/repository/raw-githubusercontent"
-      when: use_nexus
+      when: nexus
 
     - name: load wordlists
       ansible.builtin.include_vars: wordlists.yml

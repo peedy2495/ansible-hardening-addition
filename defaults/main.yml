@@ -1,7 +1,7 @@
 skip_reboots: true
 
 ## nexus cashed package proxy
-use_nexus: yes
+nexus: yes
 nexusIP: "192.168.123.180"
 nexusPort: "8081"
 nexusProto: "http"
