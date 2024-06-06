@@ -2,12 +2,13 @@
   ansible.builtin.stat:
     path: /var/lib/aide/aide.db
   register: aide_db
+  when: aide_db_build or aide_db_renew
   tags:
     - aide
 
 - name: AIDE - Build and Test Database
   ansible.builtin.command: /usr/sbin/aideinit -y -f
-  when: not aide_db.stat.exists or aide_db_renew
+  when: ( aide_db_build or aide_db_renew ) and not aide_db.stat.exists 
   tags:
     - aide
 
@@ -17,7 +18,7 @@
     dest: /var/lib/aide/aide.db
     backup: true
     remote_src: true
-  when: not aide_db.stat.exists or aide_db_renew
+  when: ( aide_db_build or aide_db_renew ) and not aide_db.stat.exists 
   tags:
     - aide
 

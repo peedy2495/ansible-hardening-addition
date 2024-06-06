@@ -30,6 +30,7 @@ shelldetector: false
 
 # create new aide database?
 aide_db_renew: false
+aide_db_build: true
 
 # print statistics of vulnerabilies in executable binaries - time expensive!
 compiling_summaries: no
