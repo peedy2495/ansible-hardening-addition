@@ -86,6 +86,7 @@
 
     - name: apparmor - activate profiles
       ansible.builtin.shell: aa-enforce /etc/apparmor.d/*
+      ignore_errors: true   #ignore snap related activation errors
   tags:
     - apparmor
 
