@@ -34,7 +34,6 @@
       - cloud-init
       - cloud-initramfs-copymods
       - cloud-initramfs-dyn-netconf
-      - curl
       - dnsutils
       - eject
       - ftp
