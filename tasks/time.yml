@@ -10,3 +10,8 @@
   ansible.builtin.service:
     name: systemd-timesyncd
     state: restarted
+
+- name: set timezone
+  ansible.builtin.timedatectl:
+    name: "Europe/Berlin"
+    state: set

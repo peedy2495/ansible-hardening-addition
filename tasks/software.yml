@@ -64,7 +64,7 @@
     - name: download devscripts
       ansible.builtin.shell: apt download devscripts
 
-    - name: umpack devscripts
+    - name: unpack devscripts
       ansible.builtin.shell: dpkg -x devscripts_*_amd64.deb /tmp/devscripts/
 
     - name: copy hardening-check
