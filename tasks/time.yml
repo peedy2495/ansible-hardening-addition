@@ -12,6 +12,5 @@
     state: restarted
 
 - name: set timezone
-  ansible.builtin.timedatectl:
-    name: "Europe/Berlin"
-    state: set
+  ansible.builtin.command:
+    cmd: timedatectl set-timezone Europe/Berlin
