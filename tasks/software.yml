@@ -23,6 +23,35 @@
       - aide
       - libpam-runtime
     state: present
+  when: ansible_lsb.codename == "jammy"
+
+- name: installing package dependencies
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+      - apt-listchanges
+      - binutils
+      - clamtk
+      - elfutils
+      - fail2ban
+      - git
+      - iucode-tool
+      - libopenscap25t64
+      - libpam-pwquality
+      - libpam-tmpdir
+      - needrestart
+      - unzip
+      - whois
+      - auditd
+      - libpam-tmpdir
+      - apt-listchanges
+      - needrestart
+      - fail2ban
+      - aide
+      - libpam-runtime
+    state: present
+  when: ansible_lsb.codename == "noble"
+
 
 - name: remove unused packages
   ansible.builtin.apt:
@@ -53,6 +82,28 @@
     state: absent
     purge: yes
     update_cache: no
+  when: ansible_lsb.codename == "jammy"
+
+- name: remove unused packages
+  ansible.builtin.apt:
+    pkg:
+      - apport
+      - apport-symptoms
+      - cloud-guest-utils
+      - cloud-init
+      - eject
+      - ftp
+      - iputils-tracepath
+      - ldap-utils
+      - modemmanager
+      - netcat-openbsd
+      - telnet
+      - ubuntu-report
+      - whoopsie
+    state: absent
+    purge: yes
+    update_cache: no
+  when: ansible_lsb.codename == "noble"
 
 - name: grab hardening-check from devscrips
   block:

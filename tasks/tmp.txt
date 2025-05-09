@@ -1,0 +1,1 @@
+apport apport-symptoms at cloud-guest-utils cloud-init cloud-initramfs-copymods cloud-initramfs-dyn-netconf dnsutils eject ftp iputils-tracepath ldap-utils modemmanager netcat-openbsd nis openbsd-inetd popularity-contest rsh-client talk telnet ubuntu-report whoopsie xinetd
