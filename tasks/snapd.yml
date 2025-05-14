@@ -14,7 +14,7 @@
 - name: snapd - uninstall all snaps
   ansible.builtin.command:
     cmd: "snap remove --purge {{ item }}"
-  loop: "{{ installed_snap_apps }}"
+  loop: "{{ installed_snap_apps.stdout_lines }}"
   # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
   tags: snapd_rmsnaps
 
