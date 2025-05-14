@@ -15,8 +15,8 @@
 
 - name: snapd
   ansible.builtin.import_tasks: snapd.yml
-  # tags:
-    # - snapd
+  tags:
+    - snapd
 
 - name: software
   ansible.builtin.import_tasks: software.yml

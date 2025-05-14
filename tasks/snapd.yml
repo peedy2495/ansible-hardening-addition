@@ -2,21 +2,15 @@
   ansible.builtin.shell: |
     snap list | grep -v 'core22\|snapd \|bare\|snap-store' | tail -n+2 | cut -d' ' -f1
   register: installed_snap_apps
-  # when: (ansible_distribution == "Ubuntu") and (ansible_distribution_version >= '2404')
-  tags: snapd_rmsnaps
 
 - name: snapd - print installed snaps
   ansible.builtin.debug:
     msg: "Installed snaps: {{ installed_snap_apps.stdout_lines }}"
-  # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
-  tags: snapd_rmsnaps
 
 - name: snapd - uninstall all snap applications
   ansible.builtin.command:
     cmd: "snap remove --purge {{ item }}"
   loop: "{{ installed_snap_apps.stdout_lines }}"
-  # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
-  tags: snapd_rmsnaps
 
 - name: snapd - uninstall basic snaps
   ansible.builtin.command:
@@ -25,34 +19,24 @@
     - core22
     - bare
     - snapd
-  # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
-  tags: snapd_rmsnaps
 
 - name: snapd - disable services
   ansible.builtin.systemd:
     name: snapd
     enabled: false
     state: stopped
-  # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
-  tags: snapd_rm
 
 - name: snapd - remove
   ansible.builtin.apt:
     name: snapd
     state: absent
     purge: true
-  # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
-  tags: snapd_rm
 
 - name: snapd - remove unused packages
   ansible.builtin.apt:
     autoclean: true
-  # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
-  tags: snapd_rm
 
 - name: prevent snapd from being reinstalled
   ansible.builtin.copy:
     dest: /etc/apt/preferences.d/nosnap.pref
     src: nosnap.pref
-  # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
-  tags: snapd_rm
