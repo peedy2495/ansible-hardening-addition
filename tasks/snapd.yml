@@ -3,10 +3,6 @@
     snap list | grep -v 'core22\|snapd \|bare\|snap-store' | tail -n+2 | cut -d' ' -f1
   register: installed_snap_apps
 
-- name: snapd - print installed snaps
-  ansible.builtin.debug:
-    msg: "Installed snaps: {{ installed_snap_apps.stdout_lines }}"
-
 - name: snapd - uninstall all snap applications
   ansible.builtin.command:
     cmd: "snap remove --purge {{ item }}"
