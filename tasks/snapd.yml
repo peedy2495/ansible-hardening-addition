@@ -2,7 +2,7 @@
   ansible.builtin.command:
     cmd: "snap list"
   register: installed_snaps
-  when: (ansible_distribution == "Ubuntu") and (ansible_lsb.codename >= "24.04")
+  when: (ansible_distribution == "Ubuntu") and (ansible_distribution_version >= '2404')
   tags: snapd_rmsnaps
 
 - name: snapd - print installed snaps
