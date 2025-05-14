@@ -1,6 +1,6 @@
 - name: snapd - get list of installed snap applications
   ansible.builtin.shell: |
-    snap list | grep -v 'core22\|snapd\|bare\|snap-store'# | tail -n+2 | cut -d' ' -f1
+    snap list | grep -v 'core22\|snapd\|bare\|snap-store' | tail -n+2 | cut -d' ' -f1
   register: installed_snap_apps
   # when: (ansible_distribution == "Ubuntu") and (ansible_distribution_version >= '2404')
   tags: snapd_rmsnaps
