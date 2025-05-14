@@ -12,6 +12,7 @@
   ansible.builtin.command:
     cmd: "snap remove --purge {{ item }}"
   loop:
+    - snap-store
     - core22
     - bare
     - snapd
@@ -33,7 +34,18 @@
 
 - name: snapd - remove unused packages
   ansible.builtin.apt:
-    autoclean: true
+    autoremove: true
+
+- name: reinstall basic applications
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - gnome-todo
+    - eog
+    - nautilus
+    - evolution
+  when: installed_snap_apps.stdout_lines | length > 0
 
 - name: prevent snapd from being reinstalled
   ansible.builtin.copy:

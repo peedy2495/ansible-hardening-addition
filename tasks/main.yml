@@ -8,15 +8,15 @@
   tags:
    - volumes
 
-- name: preparing drives
-  ansible.builtin.import_tasks: volumes.yml
-  tags:
-   - volumes
-
 - name: snapd
   ansible.builtin.import_tasks: snapd.yml
   tags:
     - snapd
+
+- name: preparing drives
+  ansible.builtin.import_tasks: volumes.yml
+  tags:
+   - volumes
 
 - name: software
   ansible.builtin.import_tasks: software.yml
