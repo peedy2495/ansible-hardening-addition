@@ -44,17 +44,18 @@
     dest: /etc/apt/preferences.d/nosnap.pref
     src: nosnap.pref
 
-- name: snapd - find userdirs
-  ansible.builtin.find:
-    paths: /home
-    patterns: "snap"
-    recurse: true
-  register: snap_userdirs
-
 - name: snapd - remove in root home
   ansible.builtin.file:
     path: "/root/snap"
     state: absent
+
+- name: snapd - find userdirs
+  ansible.builtin.find:
+    paths: /home
+    patterns: "snap"
+    file_type: directory
+    recurse: true
+  register: snap_userdirs
 
 - name: snapd - remove folders in userhomes
   ansible.builtin.file:
