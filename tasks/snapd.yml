@@ -31,6 +31,7 @@
     name: snapd
     state: absent
     purge: true
+  ignore_errors: true
 
 - name: snapd - remove unused packages
   ansible.builtin.apt:
