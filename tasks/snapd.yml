@@ -19,12 +19,14 @@
     - core22
     - bare
     - snapd
+  ignore_errors: true
 
 - name: snapd - disable services
   ansible.builtin.systemd:
     name: snapd
     enabled: false
     state: stopped
+  ignore_errors: true 
 
 - name: snapd - remove
   ansible.builtin.apt:
@@ -52,7 +54,7 @@
 - name: snapd - remove in root home
   ansible.builtin.file:
     path: "/root/snap"
-    sate: absent
+    state: absent
 
 - name: snapd - remove folders in userhomes
   ansible.builtin.file:
