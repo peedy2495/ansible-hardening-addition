@@ -1,20 +1,21 @@
-- name: snapd - get list of installed snaps
+- name: snapd - get list of installed snap applications
   ansible.builtin.command:
-    cmd: "snap list"
-  register: installed_snaps
+    cmd: |
+      snap list | grep -v 'core22\|snapd\|bare\|snap-store'# | tail -n+2 | cut -d' ' -f1
+  register: installed_snap_apps
   # when: (ansible_distribution == "Ubuntu") and (ansible_distribution_version >= '2404')
   tags: snapd_rmsnaps
 
 - name: snapd - print installed snaps
   ansible.builtin.debug:
-    msg: "Installed snaps: {{ installed_snaps.stdout_lines }}"
+    msg: "Installed snaps: {{ installed_snap_apps.stdout_lines }}"
   # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
   tags: snapd_rmsnaps
 
 - name: snapd - uninstall all snaps
   ansible.builtin.command:
     cmd: "snap remove --purge {{ item }}"
-  loop: "{{ installed_snaps }}"
+  loop: "{{ installed_snap_apps }}"
   # when: ansible_distribution == "Ubuntu" and  ansible_lsb.codename >= "24.04"
   tags: snapd_rmsnaps
 
