@@ -40,3 +40,22 @@
   ansible.builtin.copy:
     dest: /etc/apt/preferences.d/nosnap.pref
     src: nosnap.pref
+
+- name: snapd - find userdirs
+  ansible.builtin.find:
+    paths: /home
+    patterns: "snap"
+    recurse: true
+  register: snap_userdirs
+
+- name: snapd - remove in root home
+  ansible.builtin.file:
+    path: "/root/snap"
+    sate: absent
+
+- name: snapd - remove folders in userhomes
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ snap_userdirs.files }}"
+  when: snap_userdirs.matched > 0
