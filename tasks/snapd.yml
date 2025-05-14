@@ -5,6 +5,12 @@
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= "24.04"
   tags: snapd_rmsnaps
 
+- name: snapd - print installed snaps
+  ansible.builtin.debug:
+    msg: "Installed snaps: {{ installed_snaps.stdout_lines }}"
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= "24.04"
+  tags: snapd_rmsnaps
+
 - name: snapd - uninstall all snaps
   ansible.builtin.command:
     cmd: "snap remove --purge {{ item }}"
