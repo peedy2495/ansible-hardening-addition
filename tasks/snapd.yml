@@ -3,12 +3,14 @@
     cmd: "snap list"
   register: installed_snaps
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= "24.04"
+  tags: snapd_rmsnaps
 
 - name: snapd - uninstall all snaps
   ansible.builtin.command:
     cmd: "snap remove --purge {{ item }}"
   loop: "{{ installed_snaps }}"
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= "24.04"
+  tags: snapd_rmsnaps
 
 - name: snapd - disable services
   ansible.builtin.systemd:
@@ -16,6 +18,7 @@
     enabled: false
     state: stopped
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= "24.04"
+  tags: snapd_rm
 
 - name : snapd - remove
   ansible.builtin.apt:
@@ -23,8 +26,10 @@
     state: absent
     purge: true
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= "24.04"
+  tags: snapd_rm
 
 - name: snapd - remove unused packages
   ansible.builtin.apt:
     autoclean: true
   when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version >= "24.04"
+  tags: snapd_rm
