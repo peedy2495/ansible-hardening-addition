@@ -45,14 +45,13 @@
     - eog
     - nautilus
     - evolution
-  when: installed_snap_apps.stdout_lines | length > 0
 
 - name: prevent snapd from being reinstalled
   ansible.builtin.copy:
     dest: /etc/apt/preferences.d/nosnap.pref
     src: nosnap.pref
 
-- name: snapd - remove in root home
+- name: snapd - remove folder in root home
   ansible.builtin.file:
     path: "/root/snap"
     state: absent

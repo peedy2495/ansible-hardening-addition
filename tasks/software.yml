@@ -91,7 +91,7 @@
       - apport-symptoms
       - cloud-guest-utils
       - cloud-init
-      - eject
+      #- eject :dependency for nautilus
       - ftp
       - iputils-tracepath
       - ldap-utils

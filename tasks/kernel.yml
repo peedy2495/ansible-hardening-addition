@@ -223,6 +223,27 @@
   when: rm_extra_modules and
     not (ansible_distribution == 'Ubuntu' and os_type == 'desktop')
 
+- name: use hwe kernel for modern hardware  
+  block:
+    - name: install hwe kernel
+      ansible.builtin.apt:
+        pkg:
+          - linux-generic-hwe-{{ ansible_lsb.codename }}
+        state: present
+        update_cache: yes
+    - name: remove old kernel
+      ansible.builtin.apt:
+        pkg:
+          - linux-generic
+          - linux-image-generic
+          - linux-headers-generic
+        autoremove: yes
+        state: absent
+        purge: yes
+  when: ansible_distribution == 'Ubuntu' and os_type == 'desktop'
+  tags:
+    - wip
+
 - name: prevent loading modules after boot
   block:
     - name: deploy kernel-modules-disabled.service
