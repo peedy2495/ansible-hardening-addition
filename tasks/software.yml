@@ -64,6 +64,7 @@
       - cloud-initramfs-copymods
       - cloud-initramfs-dyn-netconf
       - dnsutils
+      - eject
       - ftp
       - iputils-tracepath
       - ldap-utils
