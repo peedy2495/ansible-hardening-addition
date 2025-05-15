@@ -228,7 +228,7 @@
     - name: install hwe kernel
       ansible.builtin.apt:
         pkg:
-          - linux-generic-hwe-{{ ansible_lsb.codename }}
+          - linux-generic-hwe-{{ ansible_distribution_version }}
         state: present
         update_cache: yes
     - name: remove old kernel
