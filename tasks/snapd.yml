@@ -40,12 +40,11 @@
   ansible.builtin.apt:
     name: "{{ item }}"
     state: latest
+    recommends: true
   loop:
-    - gnome-todo
-    - eog
-    - nautilus
-    - evolution
-
+    - gnome-core
+  when: os_type == 'desktop'
+  
 - name: prevent snapd from being reinstalled
   ansible.builtin.copy:
     dest: /etc/apt/preferences.d/nosnap.pref
