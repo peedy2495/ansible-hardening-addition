@@ -69,3 +69,6 @@ rm_extra_modules: no
 
 # !Attention! blacklisting all recent unused kernel modules ... might crash remote systems
 blacklist_unused: no
+
+# remove extra kernel modules
+remove_extra_modules: true

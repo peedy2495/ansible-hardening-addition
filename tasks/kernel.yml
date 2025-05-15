@@ -221,28 +221,7 @@
           - amd64-microcode
       notify: reboot system
   when: rm_extra_modules and
-    not (ansible_distribution == 'Ubuntu' and os_type == 'desktop')
-
-- name: use hwe kernel for modern hardware  
-  block:
-    - name: install hwe kernel
-      ansible.builtin.apt:
-        pkg:
-          - linux-generic-hwe-{{ ansible_distribution_version }}
-        state: present
-        update_cache: yes
-    - name: remove old kernel
-      ansible.builtin.apt:
-        pkg:
-          - linux-generic
-          - linux-image-generic
-          - linux-headers-generic
-        autoremove: yes
-        state: absent
-        purge: yes
-  when: ansible_distribution == 'Ubuntu' #and os_type == 'desktop'
-  tags:
-    - wip
+    not (ansible_distribution == 'Ubuntu' and os_type == 'desktop' and remove_extra_modules)
 
 - name: prevent loading modules after boot
   block:
