@@ -64,7 +64,6 @@
       - cloud-initramfs-copymods
       - cloud-initramfs-dyn-netconf
       - dnsutils
-      - eject
       - ftp
       - iputils-tracepath
       - ldap-utils
@@ -94,7 +93,6 @@
       #- eject :dependency for nautilus
       - ftp
       - iputils-tracepath
-      - ldap-utils
       - modemmanager
       - netcat-openbsd
       - telnet
