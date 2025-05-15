@@ -240,7 +240,7 @@
         autoremove: yes
         state: absent
         purge: yes
-  when: ansible_distribution == 'Ubuntu' and os_type == 'desktop'
+  when: ansible_distribution == 'Ubuntu' #and os_type == 'desktop'
   tags:
     - wip
 
