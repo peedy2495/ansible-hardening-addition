@@ -36,11 +36,11 @@
   ansible.builtin.apt:
     autoremove: true
 
-- name: reinstall basic applications
+- name: snapd- reinstall basic applications
   ansible.builtin.apt:
     name: "{{ item }}"
     state: latest
-    recommends: true
+    install_recommends: true
   loop:
     - gnome-core
   when: os_type == 'desktop'
