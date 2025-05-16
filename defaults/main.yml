@@ -72,3 +72,6 @@ blacklist_unused: no
 
 # remove extra kernel modules
 remove_extra_modules: true
+
+# Run tasks for fill the nexus proxy cahe, only
+caching_only: false

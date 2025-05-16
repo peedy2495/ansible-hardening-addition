@@ -144,3 +144,4 @@
     state: "{{ item }}"
     # be shure of pulling those packages in case of using a cached proxy
   with_items: ["absent", "present"]
+  when: caching_only
