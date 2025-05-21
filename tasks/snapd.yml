@@ -36,6 +36,11 @@
   ansible.builtin.apt:
     autoremove: true
 
+- name: prevent snapd from being reinstalled
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/nosnap.pref
+    src: nosnap.pref
+
 - name: snapd- reinstall basic applications
   ansible.builtin.apt:
     name: "{{ item }}"
@@ -44,11 +49,6 @@
   loop:
     - gnome-core
   when: os_type == 'desktop'
-  
-- name: prevent snapd from being reinstalled
-  ansible.builtin.copy:
-    dest: /etc/apt/preferences.d/nosnap.pref
-    src: nosnap.pref
 
 - name: snapd - remove folder in root home
   ansible.builtin.file:
